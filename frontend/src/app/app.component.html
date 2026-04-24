@@ -1,0 +1,105 @@
+<div class="shell">
+  <header>
+    <h1>jobdash</h1>
+    <div class="stats" *ngIf="stats() as s">
+      <span>{{ s.visible }} visible</span>
+      <span>·</span>
+      <span>{{ s.saved }} saved</span>
+      <span>·</span>
+      <span>{{ s.total }} total</span>
+      <span *ngIf="s.lastRun">· last fetch {{ s.lastRun.ran_at | date: 'short' }}</span>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="row">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" [ngModel]="settings().title" (ngModelChange)="updateTitle($event)" />
+      </div>
+      <div class="field">
+        <label>Location</label>
+        <input type="text" [ngModel]="settings().location" (ngModelChange)="updateLocation($event)" />
+      </div>
+      <div class="field inline">
+        <label><input type="checkbox" [ngModel]="settings().includeRemote" (ngModelChange)="updateIncludeRemote($event)" /> Include remote</label>
+      </div>
+      <button (click)="saveSettings()">Save</button>
+      <button class="primary" (click)="refresh()" [disabled]="refreshing()">
+        {{ refreshing() ? 'Refreshing…' : 'Refresh now' }}
+      </button>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Resume</label>
+        <div class="resume-status">
+          <ng-container *ngIf="resume().uploaded; else noResume">
+            <strong>{{ resume().filename }}</strong>
+            <span class="muted">· {{ resume().uploadedAt | date: 'short' }}</span>
+          </ng-container>
+          <ng-template #noResume>
+            <span class="muted">No resume uploaded — scores will be 0</span>
+          </ng-template>
+        </div>
+      </div>
+      <label class="btn-file">
+        <input type="file" accept="application/pdf" (change)="onResumeSelected($event)" hidden />
+        {{ uploading() ? 'Uploading…' : (resume().uploaded ? 'Replace resume' : 'Upload resume (PDF)') }}
+      </label>
+    </div>
+
+    <div class="row filters">
+      <label><input type="checkbox" [ngModel]="savedOnly()" (ngModelChange)="savedOnly.set($event); loadJobs()" /> Saved only</label>
+      <label><input type="checkbox" [ngModel]="showHidden()" (ngModelChange)="showHidden.set($event); loadJobs()" /> Show hidden</label>
+      <label class="score-filter">
+        Min score: {{ scorePct(minScore()) }}%
+        <input type="range" min="0" max="1" step="0.05" [ngModel]="minScore()" (ngModelChange)="minScore.set($event); loadJobs()" />
+      </label>
+    </div>
+
+    <div class="message" *ngIf="message()">{{ message() }}</div>
+  </section>
+
+  <section class="jobs">
+    <div *ngIf="loading()" class="muted">Loading…</div>
+    <div *ngIf="!loading() && visibleJobs().length === 0" class="muted">
+      No jobs yet. Click "Refresh now" to fetch.
+    </div>
+
+    <article class="job" *ngFor="let job of visibleJobs()">
+      <div class="job-head" (click)="toggleExpand(job.id)">
+        <div class="score" [style.background]="scoreColor(job.score)">
+          {{ scorePct(job.score) }}
+        </div>
+        <div class="job-main">
+          <div class="job-title">
+            {{ job.title }}
+            <span class="source" [attr.data-source]="job.source">{{ job.source }}</span>
+            <span class="badge" *ngIf="job.remote">remote</span>
+          </div>
+          <div class="job-sub">
+            <span *ngIf="job.company">{{ job.company }}</span>
+            <span *ngIf="job.location">· {{ job.location }}</span>
+            <span *ngIf="job.salary">· {{ job.salary }}</span>
+            <span *ngIf="job.postedAt">· {{ job.postedAt | date: 'mediumDate' }}</span>
+          </div>
+          <div class="terms" *ngIf="job.matchedTerms.length">
+            <span class="term" *ngFor="let t of job.matchedTerms">{{ t }}</span>
+          </div>
+        </div>
+        <div class="actions" (click)="$event.stopPropagation()">
+          <a [href]="job.url" target="_blank" rel="noopener">Open ↗</a>
+          <button (click)="toggleSave(job)" [class.active]="job.saved" title="Save">
+            {{ job.saved ? '★' : '☆' }}
+          </button>
+          <button *ngIf="!job.hidden" (click)="hide(job)" title="Hide">✕</button>
+          <button *ngIf="job.hidden" (click)="unhide(job)" title="Unhide">↺</button>
+        </div>
+      </div>
+      <div class="description" *ngIf="expandedId() === job.id">
+        <p>{{ job.description }}</p>
+      </div>
+    </article>
+  </section>
+</div>
