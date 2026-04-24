@@ -2,6 +2,7 @@
 
 Personal job-recommendation dashboard. Pulls Software Engineer postings from five sources (Adzuna, The Muse, RemoteOK, Findwork, Workable), parses your resume PDF, and ranks jobs by TF-IDF cosine similarity against the resume — no paid AI key required.
 
+You can visit https://publicapis.io/category/jobs to see what job APIS that are available.
 ## Stack
 
 - **Backend**: Node.js + Express + TypeScript, `better-sqlite3` for local storage, `pdf-parse` for resume parsing, `natural` for TF-IDF scoring, `node-cron` for daily refresh.
