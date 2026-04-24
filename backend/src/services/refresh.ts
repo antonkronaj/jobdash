@@ -4,6 +4,7 @@ import { adzuna } from './fetchers/adzuna.js';
 import { themuse } from './fetchers/themuse.js';
 import { remoteok } from './fetchers/remoteok.js';
 import { workable } from './fetchers/workable.js';
+import { findwork } from './fetchers/findwork.js';
 import type { FetchedJob, FetchParams } from './fetchers/types.js';
 import { scoreJobs } from './matcher.js';
 import { randomUUID } from 'node:crypto';
@@ -30,6 +31,7 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
       themuse(params),
       remoteok(params),
       workable(params),
+      findwork(params),
     ]);
     for (const r of results) {
       if (r.status === 'fulfilled') fetched = fetched.concat(r.value);

@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:jobs.workable.com)"
+      "WebFetch(domain:jobs.workable.com)",
+      "WebFetch(domain:findwork.dev)",
+      "WebSearch"
     ]
   }
 }

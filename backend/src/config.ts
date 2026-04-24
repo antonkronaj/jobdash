@@ -8,6 +8,9 @@ export const config = {
     appKey: process.env.ADZUNA_APP_KEY ?? '',
     country: process.env.ADZUNA_COUNTRY ?? 'us',
   },
+  findwork: {
+    apiKey: process.env.FINDWORK_API_KEY ?? '',
+  },
   defaults: {
     title: process.env.DEFAULT_SEARCH_TITLE ?? 'Software Engineer',
     location: process.env.DEFAULT_SEARCH_LOCATION ?? 'Portland, Oregon',
