@@ -154,6 +154,18 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .source[data-source=workable] { background: #ede9fe; color: #6d28d9; }
 .source[data-source=findwork] { background: #fce7f3; color: #9d174d; }
 
+.sources-row { align-items: center; flex-wrap: wrap; gap: 8px; }
+.sources-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.sources-row .source { display: inline-flex; align-items: center; gap: 5px; cursor: default; }
+.source-count {
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
 .badge {
   font-size: 10px;
   padding: 2px 6px;

@@ -89,6 +89,13 @@ jobsRouter.patch('/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+jobsRouter.get('/sources', (_req, res) => {
+  const rows = db
+    .prepare('SELECT source, COUNT(*) as count FROM jobs GROUP BY source ORDER BY count DESC')
+    .all() as { source: string; count: number }[];
+  res.json(rows);
+});
+
 jobsRouter.get('/stats', (_req, res) => {
   const total = (db.prepare('SELECT COUNT(*) as c FROM jobs').get() as { c: number }).c;
   const visible = (

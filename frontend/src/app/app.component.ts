@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
   resume = signal<ResumeInfo>({ uploaded: false });
   settings = signal<Settings>({ title: '', location: '', includeRemote: true });
   stats = signal<Stats | null>(null);
+  sources = signal<{ source: string; count: number }[]>([]);
 
   showHidden = signal(false);
   savedOnly = signal(false);
@@ -38,6 +39,7 @@ export class AppComponent implements OnInit {
     this.api.getResume().subscribe((r) => this.resume.set(r));
     this.api.getSettings().subscribe((s) => this.settings.set(s));
     this.api.stats().subscribe((s) => this.stats.set(s));
+    this.api.getSources().subscribe((s) => this.sources.set(s));
   }
 
   loadJobs(): void {
@@ -69,6 +71,7 @@ export class AppComponent implements OnInit {
         this.refreshing.set(false);
         this.loadJobs();
         this.api.stats().subscribe((s) => this.stats.set(s));
+        this.api.getSources().subscribe((s) => this.sources.set(s));
       },
       error: (err) => {
         this.message.set(`Refresh failed: ${err.message ?? err}`);

@@ -71,6 +71,10 @@ export class ApiService {
     return this.http.get<Stats>(`${API}/jobs/stats`);
   }
 
+  getSources(): Observable<{ source: string; count: number }[]> {
+    return this.http.get<{ source: string; count: number }[]>(`${API}/jobs/sources`);
+  }
+
   getSettings(): Observable<Settings> {
     return this.http.get<Settings>(`${API}/settings`);
   }

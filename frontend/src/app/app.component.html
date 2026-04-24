@@ -58,6 +58,13 @@
       </label>
     </div>
 
+    <div class="row sources-row" *ngIf="sources().length">
+      <span class="sources-label">Sources</span>
+      <span class="source" [attr.data-source]="s.source" *ngFor="let s of sources()">
+        {{ s.source }}<span class="source-count">{{ s.count }}</span>
+      </span>
+    </div>
+
     <div class="message" *ngIf="message()">{{ message() }}</div>
   </section>
 
