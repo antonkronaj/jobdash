@@ -1,6 +1,6 @@
 # jobdash
 
-Personal job-recommendation dashboard. Pulls Software Engineer postings from free public APIs (Adzuna, The Muse, RemoteOK), parses your resume PDF, and ranks jobs by TF-IDF cosine similarity against the resume — no paid AI key required.
+Personal job-recommendation dashboard. Pulls Software Engineer postings from five sources (Adzuna, The Muse, RemoteOK, Findwork, Workable), parses your resume PDF, and ranks jobs by TF-IDF cosine similarity against the resume — no paid AI key required.
 
 ## Stack
 
@@ -30,10 +30,19 @@ npm run dev          # http://localhost:3001
 
 Environment variables (see `.env.example`):
 - `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, `ADZUNA_COUNTRY` (default `us`)
+- `FINDWORK_API_KEY`
 - `DEFAULT_SEARCH_TITLE` (default `Software Engineer`)
 - `DEFAULT_SEARCH_LOCATION` (default `Portland, Oregon`)
 - `DEFAULT_INCLUDE_REMOTE` (default `true`)
 - `REFRESH_CRON` (default `0 6 * * *` — 6am daily)
+
+### API keys
+
+**Adzuna** — register at https://developer.adzuna.com/signup. Creates a free account; copy the `app_id` and `app_key` from your dashboard into `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`.
+
+**Findwork** — register at https://findwork.dev/register. After email confirmation, find your token at https://findwork.dev/dashboard/api-token and set it as `FINDWORK_API_KEY`.
+
+**The Muse, RemoteOK, Workable** — no key required; fetched anonymously.
 
 ### Frontend
 
@@ -48,7 +57,7 @@ npm start            # http://localhost:4200
 1. Start backend + frontend.
 2. Open http://localhost:4200.
 3. Upload your resume PDF (top panel).
-4. Click **Refresh now** — fetches from all three sources and scores every job against your resume.
+4. Click **Refresh now** — fetches from all five sources and scores every job against your resume.
 5. Scores are 0–100%. Sort is by score DESC. Use min-score slider to filter noise.
 6. Click a job to expand the description. Save (★) or hide (✕) jobs. Hidden jobs are excluded unless "Show hidden" is toggled.
 7. Daily cron runs at 6am local; new jobs appear on next page load.
