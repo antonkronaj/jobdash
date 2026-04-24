@@ -60,7 +60,9 @@
 
     <div class="row sources-row" *ngIf="sources().length">
       <span class="sources-label">Sources</span>
-      <span class="source" [attr.data-source]="s.source" *ngFor="let s of sources()">
+      <span class="source" [attr.data-source]="s.source" [class.active]="selectedSource() === s.source"
+        (click)="selectedSource.set(selectedSource() === s.source ? null : s.source)"
+        *ngFor="let s of sources()">
         {{ s.source }}<span class="source-count">{{ s.count }}</span>
       </span>
     </div>

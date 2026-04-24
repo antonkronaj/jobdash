@@ -97,7 +97,7 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
     }
   });
 
-  insertMany(fetched);
+  insertMany(fetched.filter((j) => j.title));
 
   const countAfter = (db.prepare('SELECT COUNT(*) as c FROM jobs').get() as { c: number }).c;
   const added = countAfter - countBefore;

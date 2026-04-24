@@ -156,7 +156,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .sources-row { align-items: center; flex-wrap: wrap; gap: 8px; }
 .sources-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-.sources-row .source { display: inline-flex; align-items: center; gap: 5px; cursor: default; }
+.sources-row .source { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.sources-row .source.active { outline: 2px solid currentColor; outline-offset: 1px; }
 .source-count {
   background: rgba(0,0,0,0.12);
   border-radius: 3px;

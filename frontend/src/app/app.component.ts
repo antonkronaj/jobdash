@@ -22,13 +22,17 @@ export class AppComponent implements OnInit {
   showHidden = signal(false);
   savedOnly = signal(false);
   minScore = signal(0);
+  selectedSource = signal<string | null>(null);
   loading = signal(false);
   refreshing = signal(false);
   uploading = signal(false);
   message = signal<string>('');
   expandedId = signal<string | null>(null);
 
-  visibleJobs = computed(() => this.jobs());
+  visibleJobs = computed(() => {
+    const src = this.selectedSource();
+    return src ? this.jobs().filter((j) => j.source === src) : this.jobs();
+  });
 
   ngOnInit(): void {
     this.loadAll();
@@ -64,7 +68,7 @@ export class AppComponent implements OnInit {
 
   refresh(): void {
     this.refreshing.set(true);
-    this.message.set('Fetching jobs from Adzuna, The Muse, RemoteOK…');
+    this.message.set('Fetching jobs from Adzuna, The Muse, RemoteOK, Findwork, Workable…');
     this.api.refresh().subscribe({
       next: (r) => {
         this.message.set(`Fetched ${r.fetched} jobs (${r.added} new)`);

@@ -34,7 +34,7 @@ function stripHtml(html: string): string {
 }
 
 const BASE = 'https://jobs.workable.com/api/v1/jobs';
-const PAGE_LIMIT = 50;
+const PAGE_LIMIT = 20;
 const MAX_PAGES = 3;
 
 export const workable: Fetcher = async (params: FetchParams): Promise<FetchedJob[]> => {
@@ -48,7 +48,7 @@ export const workable: Fetcher = async (params: FetchParams): Promise<FetchedJob
     if (pageToken) qs.set('pageToken', pageToken);
 
     const res = await fetch(`${BASE}?${qs}`, {
-      headers: { 'User-Agent': 'jobdash/0.1 (personal dashboard)' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' },
     });
     if (!res.ok) throw new Error(`workable ${res.status}`);
     return (await res.json()) as WorkableResponse;

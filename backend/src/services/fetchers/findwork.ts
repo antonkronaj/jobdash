@@ -40,6 +40,7 @@ export const findwork: Fetcher = async (params: FetchParams): Promise<FetchedJob
     let page = 0;
 
     while (url && page < MAX_PAGES) {
+      if (page > 0) await new Promise(r => setTimeout(r, 1000));
       try {
         const res = await fetch(url, { headers });
         if (!res.ok) throw new Error(`findwork ${res.status}`);
