@@ -126,7 +126,7 @@ export class AppComponent implements OnInit {
   scoreColor(score: number): string {
     if (score >= 0.5) return '#10b981';
     if (score >= 0.3) return '#f59e0b';
-    return '#94a3b8';
+    return '#64748b';
   }
 
   updateTitle(v: string) { this.settings.update((s) => ({ ...s, title: v })); }
