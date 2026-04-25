@@ -23,15 +23,35 @@ export class AppComponent implements OnInit {
   savedOnly = signal(false);
   minScore = signal(0);
   selectedSource = signal<string | null>(null);
+  usOnly = signal(false);
+  postedWithin = signal<number | null>(null);
   loading = signal(false);
   refreshing = signal(false);
   uploading = signal(false);
   message = signal<string>('');
   expandedId = signal<string | null>(null);
 
+  private static readonly US_RE = /United States|USA|\bUS\b|Remote\s*US|,\s*(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)\b/i;
+
+  private isUS(job: Job): boolean {
+    if (job.source === 'adzuna') return true;
+    if (!job.location) return true;
+    const loc = job.location;
+    if (/^(Remote|Flexible \/ Remote)$/i.test(loc.trim())) return true;
+    return AppComponent.US_RE.test(loc);
+  }
+
   visibleJobs = computed(() => {
+    let jobs = this.jobs();
     const src = this.selectedSource();
-    return src ? this.jobs().filter((j) => j.source === src) : this.jobs();
+    const days = this.postedWithin();
+    if (src) jobs = jobs.filter((j) => j.source === src);
+    if (this.usOnly()) jobs = jobs.filter((j) => this.isUS(j));
+    if (days) {
+      const cutoff = Date.now() - days * 864e5;
+      jobs = jobs.filter((j) => j.postedAt && new Date(j.postedAt).getTime() >= cutoff);
+    }
+    return jobs;
   });
 
   ngOnInit(): void {
