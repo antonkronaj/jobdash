@@ -13,8 +13,8 @@
     "build:electron": "tsc -p electron/tsconfig.json",
     "build": "npm run build:backend && npm run build:frontend && npm run build:electron",
     "dev:frontend": "npm --prefix frontend start",
-    "dev:electron": "JOBDASH_DEV=1 npm run build:backend && npm run build:electron && JOBDASH_DEV=1 electron .",
-    "start": "electron .",
+    "dev:electron": "JOBDASH_DEV=1 npm run build:backend && npm run build:electron && npm run rebuild:native && JOBDASH_DEV=1 electron .",
+    "start": "npm run rebuild:native && electron .",
     "dist": "npm run build && electron-builder",
     "postinstall": "electron-builder install-app-deps || true"
   },
