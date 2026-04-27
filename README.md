@@ -1,5 +1,7 @@
 # jobdash
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Personal job-recommendation desktop app. Pulls Software Engineer postings from five sources (Adzuna, The Muse, RemoteOK, Findwork, Workable), parses your resume PDF, and ranks jobs by TF-IDF cosine similarity against the resume — no paid AI key required.
 
 You can visit https://publicapis.io/category/jobs to see what job APIS that are available.
