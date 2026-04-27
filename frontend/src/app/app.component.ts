@@ -24,6 +24,7 @@ export class AppComponent implements OnInit {
 
   showHidden = signal(false);
   savedOnly = signal(false);
+  appliedOnly = signal(false);
   minScore = signal(0);
   selectedSource = signal<string | null>(null);
   usOnly = signal(false);
@@ -96,6 +97,7 @@ export class AppComponent implements OnInit {
       .listJobs({
         showHidden: this.showHidden(),
         savedOnly: this.savedOnly(),
+        appliedOnly: this.appliedOnly(),
         minScore: this.minScore(),
       })
       .subscribe({
