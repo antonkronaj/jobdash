@@ -5,6 +5,10 @@ workflow:
     # Run on manual pipeline triggers
     - if: $CI_PIPELINE_SOURCE == "web"
 
+stages:
+  - build
+  - release
+
 variables:
   NODE_VERSION: "22"
 
@@ -106,8 +110,8 @@ build:linux:
 # ---------------------------------------------------------------------------
 
 release:
-  stage: deploy
-  image: registry.gitlab.com/gitlab-org/deploy-cli:latest
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
     - build:macos
     - build:windows
@@ -115,8 +119,8 @@ release:
   rules:
     - if: $CI_COMMIT_TAG =~ /^v/
   script:
-    - echo "Creating GitLab deploy for $CI_COMMIT_TAG"
-  deploy:
+    - echo "Creating GitLab release for $CI_COMMIT_TAG"
+  release:
     tag_name: $CI_COMMIT_TAG
     name: "jobdash $CI_COMMIT_TAG"
     description: |
