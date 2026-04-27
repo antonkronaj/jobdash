@@ -84,6 +84,7 @@
 
     <div class="row filters">
       <label><input type="checkbox" [ngModel]="savedOnly()" (ngModelChange)="savedOnly.set($event); loadJobs()" /> Saved only</label>
+      <label><input type="checkbox" [ngModel]="appliedOnly()" (ngModelChange)="appliedOnly.set($event); loadJobs()" /> Applied only</label>
       <label><input type="checkbox" [ngModel]="showHidden()" (ngModelChange)="showHidden.set($event); loadJobs()" /> Show hidden</label>
       <label><input type="checkbox" [ngModel]="usOnly()" (ngModelChange)="usOnly.set($event)" /> US only</label>
       <label class="posted-filter">
@@ -145,9 +146,35 @@
           <button (click)="toggleSave(job)" [class.active]="job.saved" title="Save">
             {{ job.saved ? '★' : '☆' }}
           </button>
+          <button *ngIf="!job.applied" (click)="openApply(job)" title="Mark as applied" class="apply-btn">
+            Applied?
+          </button>
+          <button *ngIf="job.applied" (click)="unapply(job)" title="Remove applied" class="apply-btn active">
+            ✓ Applied
+          </button>
           <button *ngIf="!job.hidden" (click)="hide(job)" title="Hide">✕</button>
           <button *ngIf="job.hidden" (click)="unhide(job)" title="Unhide">↺</button>
         </div>
+      </div>
+      <div class="apply-panel" *ngIf="applyingId() === job.id" (click)="$event.stopPropagation()">
+        <div class="apply-fields">
+          <label>Date applied
+            <input type="date" [ngModel]="applyDraft().appliedAt" (ngModelChange)="setApplyDate($event)" />
+          </label>
+          <label class="notes-label">Notes
+            <textarea rows="3" placeholder="Recruiter name, salary discussed, follow-up date…"
+              [ngModel]="applyDraft().notes" (ngModelChange)="setApplyNotes($event)"></textarea>
+          </label>
+        </div>
+        <div class="apply-actions">
+          <button (click)="applyingId.set(null)">Cancel</button>
+          <button class="primary" (click)="saveApply(job)">Save</button>
+        </div>
+      </div>
+      <div class="apply-panel applied-summary" *ngIf="job.applied && applyingId() !== job.id" (click)="$event.stopPropagation()">
+        <span class="applied-date">Applied {{ job.appliedAt ? (job.appliedAt | date: 'mediumDate') : '(no date)' }}</span>
+        <span class="applied-notes" *ngIf="job.notes">· {{ job.notes }}</span>
+        <button class="link-btn" (click)="openApply(job)">Edit</button>
       </div>
       <div class="description" *ngIf="expandedId() === job.id">
         <p>{{ job.description }}</p>

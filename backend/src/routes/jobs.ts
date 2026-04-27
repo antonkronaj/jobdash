@@ -20,6 +20,9 @@ interface JobRow {
   matched_terms: string | null;
   hidden: number;
   saved: number;
+  applied: number;
+  applied_at: string | null;
+  notes: string | null;
   fetched_at: string;
 }
 
@@ -39,6 +42,9 @@ function rowToJob(r: JobRow) {
     matchedTerms: r.matched_terms ? (JSON.parse(r.matched_terms) as string[]) : [],
     hidden: !!r.hidden,
     saved: !!r.saved,
+    applied: !!r.applied,
+    appliedAt: r.applied_at,
+    notes: r.notes,
     fetchedAt: r.fetched_at,
   };
 }
@@ -46,12 +52,14 @@ function rowToJob(r: JobRow) {
 jobsRouter.get('/', (req, res) => {
   const showHidden = req.query.showHidden === 'true';
   const savedOnly = req.query.savedOnly === 'true';
+  const appliedOnly = req.query.appliedOnly === 'true';
   const minScore = Number(req.query.minScore ?? 0);
 
   let sql = 'SELECT * FROM jobs WHERE score >= ?';
   const params: unknown[] = [minScore];
   if (!showHidden) sql += ' AND hidden = 0';
   if (savedOnly) sql += ' AND saved = 1';
+  if (appliedOnly) sql += ' AND applied = 1';
   sql += ' ORDER BY score DESC, fetched_at DESC LIMIT 500';
 
   const rows = db.prepare(sql).all(...params) as JobRow[];
@@ -69,7 +77,13 @@ jobsRouter.post('/refresh', async (_req, res) => {
 
 jobsRouter.patch('/:id', (req, res) => {
   const { id } = req.params;
-  const { hidden, saved } = req.body as { hidden?: boolean; saved?: boolean };
+  const { hidden, saved, applied, appliedAt, notes } = req.body as {
+    hidden?: boolean;
+    saved?: boolean;
+    applied?: boolean;
+    appliedAt?: string | null;
+    notes?: string | null;
+  };
   const fields: string[] = [];
   const values: unknown[] = [];
   if (hidden !== undefined) {
@@ -79,6 +93,18 @@ jobsRouter.patch('/:id', (req, res) => {
   if (saved !== undefined) {
     fields.push('saved = ?');
     values.push(saved ? 1 : 0);
+  }
+  if (applied !== undefined) {
+    fields.push('applied = ?');
+    values.push(applied ? 1 : 0);
+  }
+  if (appliedAt !== undefined) {
+    fields.push('applied_at = ?');
+    values.push(appliedAt ?? null);
+  }
+  if (notes !== undefined) {
+    fields.push('notes = ?');
+    values.push(notes ?? null);
   }
   if (!fields.length) {
     res.status(400).json({ error: 'no fields to update' });

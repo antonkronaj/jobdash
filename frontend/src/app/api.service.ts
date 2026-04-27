@@ -17,6 +17,9 @@ export interface Job {
   matchedTerms: string[];
   hidden: boolean;
   saved: boolean;
+  applied: boolean;
+  appliedAt: string | null;
+  notes: string | null;
   fetchedAt: string;
 }
 
@@ -73,10 +76,11 @@ const API = resolveApiBase();
 export class ApiService {
   private http = inject(HttpClient);
 
-  listJobs(opts: { showHidden?: boolean; savedOnly?: boolean; minScore?: number } = {}): Observable<Job[]> {
+  listJobs(opts: { showHidden?: boolean; savedOnly?: boolean; appliedOnly?: boolean; minScore?: number } = {}): Observable<Job[]> {
     const params: Record<string, string> = {};
     if (opts.showHidden) params['showHidden'] = 'true';
     if (opts.savedOnly) params['savedOnly'] = 'true';
+    if (opts.appliedOnly) params['appliedOnly'] = 'true';
     if (opts.minScore !== undefined) params['minScore'] = String(opts.minScore);
     return this.http.get<Job[]>(`${API}/jobs`, { params });
   }
@@ -85,7 +89,7 @@ export class ApiService {
     return this.http.post<{ fetched: number; added: number }>(`${API}/jobs/refresh`, {});
   }
 
-  updateJob(id: string, patch: { hidden?: boolean; saved?: boolean }): Observable<{ ok: boolean }> {
+  updateJob(id: string, patch: { hidden?: boolean; saved?: boolean; applied?: boolean; appliedAt?: string | null; notes?: string | null }): Observable<{ ok: boolean }> {
     return this.http.patch<{ ok: boolean }>(`${API}/jobs/${encodeURIComponent(id)}`, patch);
   }
 

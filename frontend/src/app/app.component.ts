@@ -33,6 +33,8 @@ export class AppComponent implements OnInit {
   uploading = signal(false);
   message = signal<string>('');
   expandedId = signal<string | null>(null);
+  applyingId = signal<string | null>(null);
+  applyDraft = signal<{ appliedAt: string; notes: string }>({ appliedAt: '', notes: '' });
 
   private static readonly US_RE = /United States|USA|\bUS\b|Remote\s*US|,\s*(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)\b/i;
 
@@ -166,6 +168,33 @@ export class AppComponent implements OnInit {
 
   toggleExpand(id: string): void {
     this.expandedId.set(this.expandedId() === id ? null : id);
+  }
+
+  setApplyDate(v: string)  { this.applyDraft.update(d => ({ ...d, appliedAt: v })); }
+  setApplyNotes(v: string) { this.applyDraft.update(d => ({ ...d, notes: v })); }
+
+  openApply(job: Job): void {
+    this.applyingId.set(job.id);
+    this.applyDraft.set({
+      appliedAt: job.appliedAt ?? new Date().toISOString().slice(0, 10),
+      notes: job.notes ?? '',
+    });
+  }
+
+  saveApply(job: Job): void {
+    const { appliedAt, notes } = this.applyDraft();
+    this.api.updateJob(job.id, {
+      applied: true,
+      appliedAt: appliedAt || null,
+      notes: notes || null,
+    }).subscribe(() => {
+      this.applyingId.set(null);
+      this.loadJobs();
+    });
+  }
+
+  unapply(job: Job): void {
+    this.api.updateJob(job.id, { applied: false, appliedAt: null }).subscribe(() => this.loadJobs());
   }
 
   scorePct(score: number): number {

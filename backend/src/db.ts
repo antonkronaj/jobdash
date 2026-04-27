@@ -54,6 +54,15 @@ db.exec(`
   );
 `);
 
+// Migrations — safe to run on every boot; ALTER TABLE is a no-op if the column exists.
+for (const sql of [
+  'ALTER TABLE jobs ADD COLUMN applied INTEGER DEFAULT 0',
+  'ALTER TABLE jobs ADD COLUMN applied_at TEXT',
+  'ALTER TABLE jobs ADD COLUMN notes TEXT',
+]) {
+  try { db.exec(sql); } catch { /* column already exists */ }
+}
+
 export function getSetting(key: string): string | undefined {
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
     | { value: string }
