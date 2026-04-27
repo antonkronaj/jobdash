@@ -40,7 +40,10 @@
     "asarUnpack": [
       "**/node_modules/better-sqlite3/**/*"
     ],
-    "mac": { "target": "dmg", "category": "public.app-category.productivity" },
+    "mac": {
+      "target": { "target": "dmg", "arch": ["universal"] },
+      "category": "public.app-category.productivity"
+    },
     "win": { "target": "nsis" },
     "linux": { "target": "AppImage" }
   }
