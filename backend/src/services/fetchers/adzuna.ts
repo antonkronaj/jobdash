@@ -1,4 +1,4 @@
-import { config } from '../../config.js';
+import { getSetting } from '../../db.js';
 import type { FetchedJob, FetchParams, Fetcher } from './types.js';
 
 interface AdzunaJob {
@@ -19,7 +19,9 @@ interface AdzunaResponse {
 }
 
 async function searchAdzuna(query: string, where: string): Promise<AdzunaJob[]> {
-  const { appId, appKey, country } = config.adzuna;
+  const appId = getSetting('adzuna_app_id') || process.env.ADZUNA_APP_ID || '';
+  const appKey = getSetting('adzuna_app_key') || process.env.ADZUNA_APP_KEY || '';
+  const country = getSetting('adzuna_country') || process.env.ADZUNA_COUNTRY || 'us';
   if (!appId || !appKey) return [];
 
   const params = new URLSearchParams({

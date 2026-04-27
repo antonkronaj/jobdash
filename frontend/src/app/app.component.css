@@ -88,6 +88,21 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .score-filter input[type=range] { flex: 1; margin-left: 8px; }
 .posted-filter select { background: #f8fafc; border: 1px solid #cbd5e1; color: #1e293b; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
 
+.keys-row { align-items: center; gap: 14px; font-size: 13px; }
+.link-btn { background: none; padding: 0; color: #6366f1; font-weight: 500; }
+.link-btn:hover { background: none; text-decoration: underline; }
+.key-status { color: #64748b; }
+.key-status strong { color: #94a3b8; font-weight: 600; }
+.key-status strong.set { color: #10b981; }
+
+.keys-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.keys-panel p { margin: 0; }
+.key-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.key-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.key-grid input { background: #ffffff; border: 1px solid #cbd5e1; padding: 8px 10px; border-radius: 6px; font-size: 14px; color: #1e293b; }
+.key-grid input:focus { outline: none; border-color: #6366f1; }
+.keys-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
 .message {
   background: #eef2ff;
   padding: 8px 12px;

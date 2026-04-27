@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Job, Settings, ResumeInfo, Stats } from './api.service';
+import { ApiService, Job, Settings, ResumeInfo, Stats, ApiKeysStatus, ApiKeysUpdate } from './api.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +18,9 @@ export class AppComponent implements OnInit {
   settings = signal<Settings>({ title: '', location: '', includeRemote: true });
   stats = signal<Stats | null>(null);
   sources = signal<{ source: string; count: number }[]>([]);
+  keys = signal<ApiKeysStatus>({ adzunaAppId: false, adzunaAppKey: false, adzunaCountry: 'us', findworkApiKey: false });
+  keysOpen = signal(false);
+  keysDraft = signal<ApiKeysUpdate>({});
 
   showHidden = signal(false);
   savedOnly = signal(false);
@@ -64,6 +67,25 @@ export class AppComponent implements OnInit {
     this.api.getSettings().subscribe((s) => this.settings.set(s));
     this.api.stats().subscribe((s) => this.stats.set(s));
     this.api.getSources().subscribe((s) => this.sources.set(s));
+    this.api.getKeys().subscribe((k) => this.keys.set(k));
+  }
+
+  updateKeyDraft(field: keyof ApiKeysUpdate, value: string) {
+    this.keysDraft.update((d) => ({ ...d, [field]: value }));
+  }
+
+  saveKeys(): void {
+    const patch = this.keysDraft();
+    if (Object.keys(patch).length === 0) {
+      this.keysOpen.set(false);
+      return;
+    }
+    this.api.saveKeys(patch).subscribe(() => {
+      this.message.set('API keys saved.');
+      this.keysDraft.set({});
+      this.keysOpen.set(false);
+      this.api.getKeys().subscribe((k) => this.keys.set(k));
+    });
   }
 
   loadJobs(): void {

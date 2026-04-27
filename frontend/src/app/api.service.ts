@@ -33,6 +33,20 @@ export interface ResumeInfo {
   chars?: number;
 }
 
+export interface ApiKeysStatus {
+  adzunaAppId: boolean;
+  adzunaAppKey: boolean;
+  adzunaCountry: string;
+  findworkApiKey: boolean;
+}
+
+export interface ApiKeysUpdate {
+  adzunaAppId?: string;
+  adzunaAppKey?: string;
+  adzunaCountry?: string;
+  findworkApiKey?: string;
+}
+
 export interface Stats {
   total: number;
   visible: number;
@@ -45,7 +59,15 @@ export interface Stats {
   } | null;
 }
 
-const API = 'http://localhost:3001/api';
+function resolveApiBase(): string {
+  if (typeof window !== 'undefined') {
+    const port = new URLSearchParams(window.location.search).get('apiPort');
+    if (port) return `http://127.0.0.1:${port}/api`;
+  }
+  return 'http://localhost:3001/api';
+}
+
+const API = resolveApiBase();
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -81,6 +103,14 @@ export class ApiService {
 
   saveSettings(s: Settings): Observable<{ ok: boolean }> {
     return this.http.put<{ ok: boolean }>(`${API}/settings`, s);
+  }
+
+  getKeys(): Observable<ApiKeysStatus> {
+    return this.http.get<ApiKeysStatus>(`${API}/settings/keys`);
+  }
+
+  saveKeys(patch: ApiKeysUpdate): Observable<{ ok: boolean }> {
+    return this.http.put<{ ok: boolean }>(`${API}/settings/keys`, patch);
   }
 
   getResume(): Observable<ResumeInfo> {

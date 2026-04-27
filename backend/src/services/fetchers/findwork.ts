@@ -1,5 +1,5 @@
 import type { FetchedJob, FetchParams, Fetcher } from './types.js';
-import { config } from '../../config.js';
+import { getSetting } from '../../db.js';
 
 interface FindworkJob {
   id: number;
@@ -24,9 +24,10 @@ const BASE = 'https://findwork.dev/api/jobs/';
 const MAX_PAGES = 3;
 
 export const findwork: Fetcher = async (params: FetchParams): Promise<FetchedJob[]> => {
-  if (!config.findwork.apiKey) return [];
+  const apiKey = getSetting('findwork_api_key') || process.env.FINDWORK_API_KEY || '';
+  if (!apiKey) return [];
 
-  const headers = { Authorization: `Token ${config.findwork.apiKey}` };
+  const headers = { Authorization: `Token ${apiKey}` };
   const out: FetchedJob[] = [];
   const seen = new Set<number>();
 

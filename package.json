@@ -1,0 +1,47 @@
+{
+  "name": "jobdash",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal job-recommendation desktop app",
+  "main": "electron/dist/main.js",
+  "type": "module",
+  "scripts": {
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "rebuild:native": "electron-rebuild -f -w better-sqlite3 -m backend",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build -- --base-href=./",
+    "build:electron": "tsc -p electron/tsconfig.json",
+    "build": "npm run build:backend && npm run build:frontend && npm run build:electron",
+    "dev:frontend": "npm --prefix frontend start",
+    "dev:electron": "JOBDASH_DEV=1 npm run build:backend && npm run build:electron && JOBDASH_DEV=1 electron .",
+    "start": "electron .",
+    "dist": "npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps || true"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.3"
+  },
+  "build": {
+    "appId": "dev.jobdash.app",
+    "productName": "jobdash",
+    "includeSubNodeModules": true,
+    "files": [
+      "electron/dist/**/*",
+      "backend/dist/**/*",
+      "backend/package.json",
+      "backend/node_modules/**/*",
+      "frontend/dist/**/*",
+      "package.json",
+      "!**/{.DS_Store,.git,.vscode,.idea,*.map,*.ts,tsconfig*.json}"
+    ],
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**/*"
+    ],
+    "mac": { "target": "dmg", "category": "public.app-category.productivity" },
+    "win": { "target": "nsis" },
+    "linux": { "target": "AppImage" }
+  }
+}
