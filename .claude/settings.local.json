@@ -12,7 +12,9 @@
       "Bash(timeout 8 npx electron .)",
       "Bash(echo \"exit: $?\")",
       "Bash(npx electron-rebuild *)",
-      "Bash(npm --prefix backend install)"
+      "Bash(npm --prefix backend install)",
+      "Bash(npx tsc *)",
+      "Bash(timeout 8 tsx src/index.ts)"
     ]
   }
 }

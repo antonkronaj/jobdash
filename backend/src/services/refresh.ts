@@ -52,7 +52,7 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
       title: j.title,
       description: j.description,
     }));
-    scores = scoreJobs(resume.text, forScoring);
+    scores = await scoreJobs(resume.text, forScoring);
   }
 
   const insertStmt = db.prepare(`
@@ -112,7 +112,7 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
 /**
  * Rescore all existing jobs against the current resume (no re-fetch).
  */
-export function rescoreAll(): number {
+export async function rescoreAll(): Promise<number> {
   const resume = db.prepare('SELECT text FROM resume WHERE id = 1').get() as
     | { text: string }
     | undefined;
@@ -120,9 +120,9 @@ export function rescoreAll(): number {
 
   const jobs = db
     .prepare('SELECT id, title, description FROM jobs')
-    .all() as Array<{ id: string; title: string; description: string }>;
+    .all() as Array<{ id: string; title: string; description: string | null }>;
 
-  const scores = scoreJobs(resume.text, jobs);
+  const scores = await scoreJobs(resume.text, jobs);
   const stmt = db.prepare('UPDATE jobs SET score = ?, matched_terms = ? WHERE id = ?');
   const tx = db.transaction(() => {
     for (const j of jobs) {
