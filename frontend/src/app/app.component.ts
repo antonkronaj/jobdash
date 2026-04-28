@@ -30,6 +30,7 @@ export class AppComponent implements OnInit {
   selectedSource = signal<string | null>(null);
   usOnly = signal(false);
   postedWithin = signal<number | null>(null);
+  searchText = signal('');
   loading = signal(false);
   refreshing = signal(false);
   uploading = signal(false);
@@ -52,11 +53,24 @@ export class AppComponent implements OnInit {
     let jobs = this.jobs();
     const src = this.selectedSource();
     const days = this.postedWithin();
+    const q = this.searchText().trim().toLowerCase();
     if (src) jobs = jobs.filter((j) => j.source === src);
     if (this.usOnly()) jobs = jobs.filter((j) => this.isUS(j));
     if (days) {
       const cutoff = Date.now() - days * 864e5;
       jobs = jobs.filter((j) => j.postedAt && new Date(j.postedAt).getTime() >= cutoff);
+    }
+    if (q) {
+      const terms = q.split(/\s+/).filter(Boolean);
+      jobs = jobs.filter((j) => {
+        const haystack = [
+          j.title,
+          j.company ?? '',
+          j.location ?? '',
+          ...j.matchedTerms,
+        ].join(' ').toLowerCase();
+        return terms.every((t) => haystack.includes(t));
+      });
     }
     return jobs;
   });

@@ -17,6 +17,19 @@
     <aside class="sidebar">
 
       <div class="sb-group">
+        <div class="sb-search-wrap">
+          <span class="sb-search-icon">⌕</span>
+          <input
+            type="search"
+            class="sb-search"
+            placeholder="Search jobs…"
+            [ngModel]="searchText()"
+            (ngModelChange)="searchText.set($event)" />
+          <button class="sb-search-clear" *ngIf="searchText()" (click)="searchText.set('')" title="Clear">✕</button>
+        </div>
+      </div>
+
+      <div class="sb-group">
         <div class="sb-heading">Filters</div>
         <label class="sb-check" [class.dim]="refreshing()">
           <input type="checkbox" [ngModel]="savedOnly()" (ngModelChange)="savedOnly.set($event); loadJobs()" [disabled]="refreshing()" />
