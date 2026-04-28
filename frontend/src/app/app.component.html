@@ -128,7 +128,13 @@
 
           <!-- Matched terms (expanded only) -->
           <div class="jr-terms" *ngIf="expandedId() === job.id && job.matchedTerms.length">
+            <span class="jr-terms-label">Matched terms</span>
             <span class="term-chip" *ngFor="let t of job.matchedTerms">{{ t }}</span>
+          </div>
+          <div class="jr-terms jr-terms-empty"
+               *ngIf="expandedId() === job.id && !job.matchedTerms.length">
+            <span class="jr-terms-label">Matched terms</span>
+            <span class="text-muted small">No resume term overlap</span>
           </div>
 
           <!-- Applied summary bar -->
