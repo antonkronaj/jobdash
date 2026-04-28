@@ -117,10 +117,15 @@ Two ways to provide keys, in order of precedence:
 
 ## How matching works
 
+Hybrid scoring blends two signals: **70% semantic embedding similarity + 30% TF-IDF cosine + overlap bonus**.
+
 - PDF text → tokenized, stopwords removed.
-- TF-IDF over `[resume, job1, job2, ...]` corpus → cosine similarity between resume and each job.
-- Small bonus for overlap with top-60 resume terms.
+- **Embedding half**: resume and each job (`title + description`) are encoded with [`Xenova/all-MiniLM-L6-v2`](https://huggingface.co/Xenova/all-MiniLM-L6-v2) (quantized ONNX, ~25 MB). Cosine similarity is the dot product of the L2-normalised vectors.
+- **TF-IDF half**: TF-IDF over `[resume, job1, job2, ...]` cosine similarity, plus a small bonus for overlap with the top-60 resume terms. Matched terms are surfaced in the UI as chips.
+- Final score: `0.7 × embedding + 0.3 × tfidf`, clamped to `[0, 1]`.
 - Rescoring runs automatically on resume upload.
+
+> **First refresh after install** triggers a one-time download of the scoring model (~25 MB) into `~/.cache/huggingface/`. The UI shows a download progress message during this. All subsequent refreshes use the cached model and are offline-capable for the scoring step.
 
 ## API (consumed by the renderer over `127.0.0.1:<random port>`)
 
@@ -143,3 +148,4 @@ The renderer reads its API base from `?apiPort=<n>` injected into `index.html` a
 - `.env` is gitignored. Rotate Adzuna keys if they leak.
 - LinkedIn is intentionally excluded — no public API, and scraping violates their ToS.
 - After installing/updating backend deps standalone (`cd backend && npm install`), the postinstall auto-rebuilds `better-sqlite3` against Electron's ABI when run inside this monorepo.
+- **macOS builds are arm64 only** (Apple Silicon). Intel Macs are not supported by the packaged DMG. The `onnxruntime-node` and `@huggingface/transformers` packages are unpacked from the asar archive at install time so their native binaries (`.node`, `.dylib`) can be loaded.

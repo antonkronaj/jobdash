@@ -38,10 +38,12 @@
       "!**/{.DS_Store,.git,.vscode,.idea,*.map,*.ts,tsconfig*.json}"
     ],
     "asarUnpack": [
-      "**/node_modules/better-sqlite3/**/*"
+      "**/node_modules/better-sqlite3/**/*",
+      "**/node_modules/onnxruntime-node/**/*",
+      "**/node_modules/@huggingface/**/*"
     ],
     "mac": {
-      "target": { "target": "dmg", "arch": ["universal"] },
+      "target": { "target": "dmg", "arch": ["arm64"] },
       "category": "public.app-category.productivity"
     },
     "win": { "target": "nsis" },
