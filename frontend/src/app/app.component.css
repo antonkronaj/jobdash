@@ -292,7 +292,8 @@
   transition: opacity 0.1s;
 }
 .jr-line:hover .jr-actions,
-.job-row.is-applied > .jr-line .jr-actions { opacity: 1; }
+.job-row.is-applied > .jr-line .jr-actions,
+.job-row.is-expanded > .jr-line .jr-actions { opacity: 1; }
 
 .act-btn {
   display: inline-flex;
