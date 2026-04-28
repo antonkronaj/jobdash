@@ -67,12 +67,23 @@ jobsRouter.get('/', (req, res) => {
 });
 
 jobsRouter.post('/refresh', async (_req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
   try {
-    const result = await refreshJobs();
-    res.json(result);
+    const result = await refreshJobs((sourceResult) => {
+      send({ type: 'source', ...sourceResult });
+    });
+    send({ type: 'done', ...result });
   } catch (err) {
-    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+    send({ type: 'error', error: err instanceof Error ? err.message : String(err) });
   }
+
+  res.end();
 });
 
 jobsRouter.patch('/:id', (req, res) => {

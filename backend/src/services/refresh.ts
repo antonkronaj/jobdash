@@ -7,7 +7,12 @@ import { workable } from './fetchers/workable.js';
 import { findwork } from './fetchers/findwork.js';
 import type { FetchedJob, FetchParams } from './fetchers/types.js';
 import { scoreJobs } from './matcher.js';
-import { randomUUID } from 'node:crypto';
+
+export interface SourceResult {
+  source: string;
+  count: number;
+  error?: string;
+}
 
 function currentParams(): FetchParams {
   return {
@@ -18,28 +23,38 @@ function currentParams(): FetchParams {
   };
 }
 
-export async function refreshJobs(): Promise<{ fetched: number; added: number }> {
+export async function refreshJobs(
+  onSourceDone?: (result: SourceResult) => void,
+): Promise<{ fetched: number; added: number }> {
   const params = currentParams();
   const ranAt = new Date().toISOString();
 
-  let fetched: FetchedJob[] = [];
-  let errorMsg: string | null = null;
+  // Run all fetchers concurrently; report each one as it settles
+  const fetchers: Array<{ source: string; fn: () => Promise<FetchedJob[]> }> = [
+    { source: 'adzuna',   fn: () => adzuna(params)   },
+    { source: 'themuse',  fn: () => themuse(params)   },
+    { source: 'remoteok', fn: () => remoteok(params)  },
+    { source: 'workable', fn: () => workable(params)  },
+    { source: 'findwork', fn: () => findwork(params)  },
+  ];
 
-  try {
-    const results = await Promise.allSettled([
-      adzuna(params),
-      themuse(params),
-      remoteok(params),
-      workable(params),
-      findwork(params),
-    ]);
-    for (const r of results) {
-      if (r.status === 'fulfilled') fetched = fetched.concat(r.value);
-      else console.error('[refresh] fetcher failed:', r.reason);
-    }
-  } catch (err) {
-    errorMsg = err instanceof Error ? err.message : String(err);
-  }
+  const buckets: FetchedJob[][] = await Promise.all(
+    fetchers.map(({ source, fn }) =>
+      fn()
+        .then((jobs) => {
+          onSourceDone?.({ source, count: jobs.length });
+          return jobs;
+        })
+        .catch((err) => {
+          const error = err instanceof Error ? err.message : String(err);
+          console.error(`[refresh] ${source} failed:`, error);
+          onSourceDone?.({ source, count: 0, error });
+          return [] as FetchedJob[];
+        }),
+    ),
+  );
+
+  const fetched = buckets.flat().filter((j) => j.title);
 
   const resume = db.prepare('SELECT text FROM resume WHERE id = 1').get() as
     | { text: string }
@@ -97,14 +112,14 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
     }
   });
 
-  insertMany(fetched.filter((j) => j.title));
+  insertMany(fetched);
 
   const countAfter = (db.prepare('SELECT COUNT(*) as c FROM jobs').get() as { c: number }).c;
   const added = countAfter - countBefore;
 
   db.prepare(
     'INSERT INTO refresh_log (ran_at, fetched_count, new_count, error) VALUES (?, ?, ?, ?)',
-  ).run(ranAt, fetched.length, added, errorMsg);
+  ).run(ranAt, fetched.length, added, null);
 
   return { fetched: fetched.length, added };
 }

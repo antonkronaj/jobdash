@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Job, Settings, ResumeInfo, Stats, ApiKeysStatus, ApiKeysUpdate } from './api.service';
+import { ApiService, Job, Settings, ResumeInfo, Stats, ApiKeysStatus, ApiKeysUpdate, RefreshEvent } from './api.service';
 
 @Component({
   selector: 'app-root',
@@ -114,14 +114,33 @@ export class AppComponent implements OnInit {
 
   refresh(): void {
     this.refreshing.set(true);
-    this.message.set('Fetching jobs from Adzuna, The Muse, RemoteOK, Findwork, Workable…');
+    const sourceCounts = new Map<string, { count: number; error?: string }>();
+
+    const buildMessage = () => {
+      if (sourceCounts.size === 0) return 'Fetching…';
+      return [...sourceCounts.entries()]
+        .map(([src, { count, error }]) =>
+          error ? `${src}: ✕` : `${src}: ${count}`)
+        .join('  ·  ');
+    };
+
+    this.message.set('Fetching…');
+
     this.api.refresh().subscribe({
-      next: (r) => {
-        this.message.set(`Fetched ${r.fetched} jobs (${r.added} new)`);
-        this.refreshing.set(false);
-        this.loadJobs();
-        this.api.stats().subscribe((s) => this.stats.set(s));
-        this.api.getSources().subscribe((s) => this.sources.set(s));
+      next: (event: RefreshEvent) => {
+        if (event.type === 'source') {
+          sourceCounts.set(event.source, { count: event.count, error: event.error });
+          this.message.set(buildMessage());
+        } else if (event.type === 'done') {
+          this.message.set(`Fetched ${event.fetched} jobs (${event.added} new)`);
+          this.refreshing.set(false);
+          this.loadJobs();
+          this.api.stats().subscribe((s) => this.stats.set(s));
+          this.api.getSources().subscribe((s) => this.sources.set(s));
+        } else if (event.type === 'error') {
+          this.message.set(`Refresh failed: ${event.error}`);
+          this.refreshing.set(false);
+        }
       },
       error: (err) => {
         this.message.set(`Refresh failed: ${err.message ?? err}`);

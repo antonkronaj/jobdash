@@ -82,14 +82,14 @@
       </div>
     </div>
 
-    <div class="row filters">
-      <label><input type="checkbox" [ngModel]="savedOnly()" (ngModelChange)="savedOnly.set($event); loadJobs()" /> Saved only</label>
-      <label><input type="checkbox" [ngModel]="appliedOnly()" (ngModelChange)="appliedOnly.set($event); loadJobs()" /> Applied only</label>
-      <label><input type="checkbox" [ngModel]="showHidden()" (ngModelChange)="showHidden.set($event); loadJobs()" /> Show hidden</label>
-      <label><input type="checkbox" [ngModel]="usOnly()" (ngModelChange)="usOnly.set($event)" /> US only</label>
+    <div class="row filters" [class.disabled]="refreshing()">
+      <label><input type="checkbox" [ngModel]="savedOnly()" (ngModelChange)="savedOnly.set($event); loadJobs()" [disabled]="refreshing()" /> Saved only</label>
+      <label><input type="checkbox" [ngModel]="appliedOnly()" (ngModelChange)="appliedOnly.set($event); loadJobs()" [disabled]="refreshing()" /> Applied only</label>
+      <label><input type="checkbox" [ngModel]="showHidden()" (ngModelChange)="showHidden.set($event); loadJobs()" [disabled]="refreshing()" /> Show hidden</label>
+      <label><input type="checkbox" [ngModel]="usOnly()" (ngModelChange)="usOnly.set($event)" [disabled]="refreshing()" /> US only</label>
       <label class="posted-filter">
         Posted within
-        <select [ngModel]="postedWithin()" (ngModelChange)="postedWithin.set($event ? +$event : null)">
+        <select [ngModel]="postedWithin()" (ngModelChange)="postedWithin.set($event ? +$event : null)" [disabled]="refreshing()">
           <option [ngValue]="null">Any time</option>
           <option value="1">24 hours</option>
           <option value="7">7 days</option>
@@ -98,14 +98,15 @@
       </label>
       <label class="score-filter">
         Min score: {{ scorePct(minScore()) }}%
-        <input type="range" min="0" max="1" step="0.05" [ngModel]="minScore()" (ngModelChange)="minScore.set($event); loadJobs()" />
+        <input type="range" min="0" max="1" step="0.05" [ngModel]="minScore()" (ngModelChange)="minScore.set($event); loadJobs()" [disabled]="refreshing()" />
       </label>
     </div>
 
-    <div class="row sources-row" *ngIf="sources().length">
+    <div class="row sources-row" [class.disabled]="refreshing()" *ngIf="sources().length">
       <span class="sources-label">Sources</span>
       <span class="source" [attr.data-source]="s.source" [class.active]="selectedSource() === s.source"
-        (click)="selectedSource.set(selectedSource() === s.source ? null : s.source)"
+        [class.disabled]="refreshing()"
+        (click)="!refreshing() && selectedSource.set(selectedSource() === s.source ? null : s.source)"
         *ngFor="let s of sources()">
         {{ s.source }}<span class="source-count">{{ s.count }}</span>
       </span>

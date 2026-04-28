@@ -2,6 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+export type RefreshEvent =
+  | { type: 'source'; source: string; count: number; error?: string }
+  | { type: 'done'; fetched: number; added: number }
+  | { type: 'error'; error: string };
+
 export interface Job {
   id: string;
   source: string;
@@ -85,8 +90,49 @@ export class ApiService {
     return this.http.get<Job[]>(`${API}/jobs`, { params });
   }
 
-  refresh(): Observable<{ fetched: number; added: number }> {
-    return this.http.post<{ fetched: number; added: number }>(`${API}/jobs/refresh`, {});
+  refresh(): Observable<RefreshEvent> {
+    return new Observable<RefreshEvent>((observer) => {
+      const controller = new AbortController();
+      const decoder = new TextDecoder();
+
+      fetch(`${API}/jobs/refresh`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { Accept: 'text/event-stream' },
+      })
+        .then(async (response) => {
+          if (!response.ok || !response.body) {
+            observer.error(new Error(`HTTP ${response.status}`));
+            return;
+          }
+          const reader = response.body.getReader();
+          let buffer = '';
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop()!;
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              try {
+                const event: RefreshEvent = JSON.parse(line.slice(6));
+                observer.next(event);
+                if (event.type === 'done' || event.type === 'error') {
+                  observer.complete();
+                  return;
+                }
+              } catch { /* skip malformed lines */ }
+            }
+          }
+          observer.complete();
+        })
+        .catch((err) => {
+          if (err.name !== 'AbortError') observer.error(err);
+        });
+
+      return () => controller.abort();
+    });
   }
 
   updateJob(id: string, patch: { hidden?: boolean; saved?: boolean; applied?: boolean; appliedAt?: string | null; notes?: string | null }): Observable<{ ok: boolean }> {

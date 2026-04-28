@@ -84,6 +84,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .filters { gap: 20px; font-size: 13px; align-items: center; }
 .filters label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.filters.disabled, .filters.disabled label { opacity: 0.45; pointer-events: none; cursor: default; }
+.sources-row.disabled { opacity: 0.45; pointer-events: none; }
 .score-filter { flex: 1; max-width: 300px; }
 .score-filter input[type=range] { flex: 1; margin-left: 8px; }
 .posted-filter select { background: #f8fafc; border: 1px solid #cbd5e1; color: #1e293b; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
