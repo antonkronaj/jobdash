@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
   keys = signal<ApiKeysStatus>({ adzunaAppId: false, adzunaAppKey: false, adzunaCountry: 'us', findworkApiKey: false });
   keysOpen = signal(false);
   keysDraft = signal<ApiKeysUpdate>({});
+  settingsOpen = signal(false);
 
   showHidden = signal(false);
   savedOnly = signal(false);
