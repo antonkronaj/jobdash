@@ -4,7 +4,8 @@
   <header class="toolbar">
     <span class="app-name">jobdash</span>
     <div class="flex-1"></div>
-    <button class="tb-btn accent" (click)="refresh()" [disabled]="refreshing()">
+    <button class="tb-btn accent" (click)="refresh()" [disabled]="refreshing()"
+            title="Fetch jobs from external sources (Adzuna, The Muse, RemoteOK, Workable, Findwork). This can take a moment.">
       ↻ {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
     </button>
     <button class="tb-btn" (click)="settingsOpen.set(!settingsOpen())">⚙ Settings</button>
