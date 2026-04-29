@@ -94,35 +94,42 @@
       </div>
 
       <div class="job-list">
-        <div class="job-row"
+        <div class="job-card"
              *ngFor="let job of visibleJobs()"
              [class.is-expanded]="expandedId() === job.id"
              [class.is-applied]="job.applied"
              [class.is-hidden]="job.hidden">
 
-          <!-- Primary row -->
-          <div class="jr-line" (click)="toggleExpand(job.id)">
-            <span class="score-pill" [style.background]="scoreColor(job.score)">{{ scorePct(job.score) }}</span>
-            <span class="jr-title">{{ job.title }}</span>
-            <span class="jr-meta">
-              <ng-container *ngIf="job.company">{{ job.company }}</ng-container>
-              <span *ngIf="job.company && job.location" class="meta-dot">·</span>
-              <ng-container *ngIf="job.location">{{ job.location }}</ng-container>
-              <span *ngIf="job.salary" class="meta-dot">·</span>
-              <ng-container *ngIf="job.salary">{{ job.salary }}</ng-container>
-            </span>
-            <span class="jr-tags">
-              <span class="src-tag" [attr.data-source]="job.source">{{ job.source }}</span>
-              <span class="remote-tag" *ngIf="job.remote">remote</span>
-            </span>
-            <span class="jr-date" *ngIf="job.postedAt">{{ job.postedAt | date: 'MMM d' }}</span>
-            <div class="jr-actions" (click)="$event.stopPropagation()">
-              <a class="act-btn" [href]="job.url" target="_blank" rel="noopener" title="Open">↗</a>
-              <button class="act-btn" [class.on]="job.saved" (click)="toggleSave(job)" title="Save">{{ job.saved ? '★' : '☆' }}</button>
-              <button class="act-btn apply" *ngIf="!job.applied" (click)="openApply(job)" title="Mark applied">✓</button>
-              <button class="act-btn apply on" *ngIf="job.applied" (click)="unapply(job)" title="Remove applied">✓</button>
-              <button class="act-btn" *ngIf="!job.hidden" (click)="hide(job)" title="Hide">✕</button>
-              <button class="act-btn" *ngIf="job.hidden" (click)="unhide(job)" title="Unhide">↺</button>
+          <div class="jc-main" (click)="toggleExpand(job.id)">
+            <div class="jc-header">
+              <div class="jc-title-row">
+                <span class="score-pill" [style.background]="scoreColor(job.score)">{{ scorePct(job.score) }}</span>
+                <span class="jc-title">{{ job.title }}</span>
+                <span class="jr-date" *ngIf="job.postedAt">{{ job.postedAt | date: 'MMM d' }}</span>
+              </div>
+              <div class="jc-meta-row">
+                <span class="jc-company" *ngIf="job.company">{{ job.company }}</span>
+                <span *ngIf="job.company && job.location" class="meta-dot">·</span>
+                <span class="jc-location" *ngIf="job.location">{{ job.location }}</span>
+                <span *ngIf="(job.company || job.location) && job.salary" class="meta-dot">·</span>
+                <span class="jc-salary" *ngIf="job.salary">{{ job.salary }}</span>
+              </div>
+            </div>
+
+            <div class="jc-footer">
+              <div class="jr-tags">
+                <span class="src-tag" [attr.data-source]="job.source">{{ job.source }}</span>
+                <span class="remote-tag" *ngIf="job.remote">remote</span>
+              </div>
+              <div class="flex-1"></div>
+              <div class="jr-actions" (click)="$event.stopPropagation()">
+                <a class="act-btn" [href]="job.url" target="_blank" rel="noopener" title="Open">↗</a>
+                <button class="act-btn" [class.on]="job.saved" (click)="toggleSave(job)" title="Save">{{ job.saved ? '★' : '☆' }}</button>
+                <button class="act-btn apply" *ngIf="!job.applied" (click)="openApply(job)" title="Mark applied">✓</button>
+                <button class="act-btn apply on" *ngIf="job.applied" (click)="unapply(job)" title="Remove applied">✓</button>
+                <button class="act-btn" *ngIf="!job.hidden" (click)="hide(job)" title="Hide">✕</button>
+                <button class="act-btn" *ngIf="job.hidden" (click)="unhide(job)" title="Unhide">↺</button>
+              </div>
             </div>
           </div>
 
