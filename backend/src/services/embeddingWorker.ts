@@ -4,6 +4,11 @@ import { pipeline, env } from '@huggingface/transformers';
 // Transformers.js will fall back to WASM if onnxruntime-node is disabled or fails
 env.backends.onnx.enabled = false; 
 
+// Redirect cache in production (ASAR is read-only)
+if (process.env.TRANSFORMERS_CACHE_DIR) {
+  env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR;
+}
+
 // Disable fetch for models, use local if possible (though we set allowLocalModels = false)
 // But env.allowRemoteModels = false might force it to stay within controlled paths
 env.allowRemoteModels = true; // We need this to download if not cached

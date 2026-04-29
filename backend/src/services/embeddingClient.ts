@@ -20,7 +20,14 @@ class EmbeddingClient {
     this.readyPromise = new Promise((resolve, reject) => {
       // Determine if we are running from source (.ts) or compiled (.js)
       const isTs = import.meta.url.endsWith('.ts');
-      const isDev = isTs || process.env.NODE_ENV !== 'production' || process.argv.includes('watch');
+      
+      // In Electron production, we are inside an .asar file.
+      const isAsar = import.meta.url.includes('app.asar');
+      
+      // In production/dist, we want to use the .js worker and NO loader
+      const isDev = !isAsar && (isTs || process.env.NODE_ENV !== 'production' || process.argv.includes('watch') || process.env.JOBDASH_DEV === '1');
+
+      console.log(`[EmbeddingClient] Starting worker. isTs: ${isTs}, isAsar: ${isAsar}, isDev: ${isDev}`);
 
       let workerPath: string;
       if (isTs) {
@@ -43,11 +50,18 @@ class EmbeddingClient {
 
       const tsconfigPath = path.resolve(__dirname, '../../tsconfig.json');
       
+      console.log(`[EmbeddingClient] Forking worker at ${workerPath}`);
+      
       this.worker = fork(workerPath, [], {
         execArgv: loader ? ['--import', loader] : [],
         env: { 
           ...process.env, 
           TSX_TSCONFIG_PATH: tsconfigPath,
+          // Redirect Transformers.js cache to a writable directory in production
+          // DATABASE_PATH is already set to the userData dir in electron/main.ts
+          TRANSFORMERS_CACHE_DIR: process.env.DATABASE_PATH 
+            ? path.join(path.dirname(process.env.DATABASE_PATH), 'model-cache')
+            : undefined,
           // Disable multi-threading in ONNX to avoid potential fork issues/SIGTRAP
           OMP_NUM_THREADS: '1',
           MKL_NUM_THREADS: '1',
