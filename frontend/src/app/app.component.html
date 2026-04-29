@@ -32,22 +32,25 @@
 
       <div class="sb-group">
         <div class="sb-heading">Filters</div>
-        <label class="sb-check" [class.dim]="refreshing()">
-          <input type="checkbox" [ngModel]="savedOnly()" (ngModelChange)="savedOnly.set($event); loadJobs()" [disabled]="refreshing()" />
-          Saved only
-        </label>
-        <label class="sb-check" [class.dim]="refreshing()">
-          <input type="checkbox" [ngModel]="appliedOnly()" (ngModelChange)="appliedOnly.set($event); loadJobs()" [disabled]="refreshing()" />
-          Applied only
-        </label>
-        <label class="sb-check" [class.dim]="refreshing()">
-          <input type="checkbox" [ngModel]="showHidden()" (ngModelChange)="showHidden.set($event); loadJobs()" [disabled]="refreshing()" />
-          Show hidden
-        </label>
-        <label class="sb-check" [class.dim]="refreshing()">
-          <input type="checkbox" [ngModel]="usOnly()" (ngModelChange)="usOnly.set($event)" [disabled]="refreshing()" />
-          US only
-        </label>
+        <div class="sb-source" [class.active]="savedOnly()" [class.dim]="refreshing()" (click)="!refreshing() && savedOnly.set(!savedOnly()); loadJobs()">
+          <span class="src-dot" [class.active]="savedOnly()"></span>
+          <span class="src-name">Saved only</span>
+          <span class="src-count">{{ stats()?.saved || 0 }}</span>
+        </div>
+        <div class="sb-source" [class.active]="appliedOnly()" [class.dim]="refreshing()" (click)="!refreshing() && appliedOnly.set(!appliedOnly()); loadJobs()">
+          <span class="src-dot" [class.active]="appliedOnly()"></span>
+          <span class="src-name">Applied only</span>
+          <span class="src-count">{{ stats()?.applied || 0 }}</span>
+        </div>
+        <div class="sb-source" [class.active]="showHidden()" [class.dim]="refreshing()" (click)="!refreshing() && showHidden.set(!showHidden()); loadJobs()">
+          <span class="src-dot" [class.active]="showHidden()"></span>
+          <span class="src-name">Show hidden</span>
+          <span class="src-count">{{ stats()?.hidden || 0 }}</span>
+        </div>
+        <div class="sb-source" [class.active]="usOnly()" [class.dim]="refreshing()" (click)="!refreshing() && usOnly.set(!usOnly())">
+          <span class="src-dot" [class.active]="usOnly()"></span>
+          <span class="src-name">US only</span>
+        </div>
       </div>
 
       <div class="sb-group">
@@ -73,11 +76,10 @@
       <div class="sb-group" *ngIf="sources().length">
         <div class="sb-heading">Sources</div>
         <div class="sb-source" *ngFor="let s of sources()"
-             [attr.data-source]="s.source"
              [class.active]="selectedSource() === s.source"
              [class.dim]="refreshing()"
              (click)="!refreshing() && selectedSource.set(selectedSource() === s.source ? null : s.source)">
-          <span class="src-dot" [attr.data-source]="s.source"></span>
+          <span class="src-dot" [attr.data-source]="s.source" [class.active]="selectedSource() === s.source"></span>
           <span class="src-name">{{ s.source }}</span>
           <span class="src-count">{{ s.count }}</span>
         </div>
@@ -255,6 +257,10 @@
       <span>{{ s.visible }} visible</span>
       <span class="sb-sep">·</span>
       <span>{{ s.saved }} saved</span>
+      <span class="sb-sep">·</span>
+      <span>{{ s.applied }} applied</span>
+      <span class="sb-sep">·</span>
+      <span>{{ s.hidden }} hidden</span>
       <span class="sb-sep">·</span>
       <span>{{ s.total }} total</span>
       <ng-container *ngIf="s.lastRun">

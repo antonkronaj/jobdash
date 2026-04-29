@@ -204,7 +204,7 @@
   transition: all 0.1s;
 }
 .sb-source:hover { background: #f5f5f7; }
-.sb-source.active { background: var(--row-selected); color: var(--accent); font-weight: 600; }
+.sb-source.active { background: var(--row-selected); color: var(--accent); font-weight: 500; }
 .sb-source.dim { opacity: 0.4; pointer-events: none; }
 
 .src-dot {
@@ -212,12 +212,24 @@
   border-radius: 50%;
   background: #8e8e93;
   flex-shrink: 0;
+  transition: all 0.2s;
 }
-.src-dot[data-source=adzuna]   { background: #1e40af; }
-.src-dot[data-source=themuse]  { background: #c2410c; }
-.src-dot[data-source=remoteok] { background: #166534; }
-.src-dot[data-source=workable] { background: #6d28d9; }
-.src-dot[data-source=findwork] { background: #9d174d; }
+.src-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 4px var(--accent);
+}
+.src-dot[data-source=adzuna].active,
+.src-dot[data-source=themuse].active,
+.src-dot[data-source=remoteok].active,
+.src-dot[data-source=workable].active,
+.src-dot[data-source=findwork].active {
+  box-shadow: 0 0 4px currentColor;
+}
+.src-dot[data-source=adzuna]   { background: #1e40af; color: #1e40af; }
+.src-dot[data-source=themuse]  { background: #c2410c; color: #c2410c; }
+.src-dot[data-source=remoteok] { background: #166534; color: #166534; }
+.src-dot[data-source=workable] { background: #6d28d9; color: #6d28d9; }
+.src-dot[data-source=findwork] { background: #9d174d; color: #9d174d; }
 
 .src-name { flex: 1; }
 .src-count { font-size: 11px; color: var(--muted); }

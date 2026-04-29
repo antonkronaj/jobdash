@@ -191,15 +191,24 @@ export class AppComponent implements OnInit {
   }
 
   hide(job: Job): void {
-    this.api.updateJob(job.id, { hidden: true }).subscribe(() => this.loadJobs());
+    this.api.updateJob(job.id, { hidden: true }).subscribe(() => {
+      this.loadJobs();
+      this.api.stats().subscribe((s) => this.stats.set(s));
+    });
   }
 
   toggleSave(job: Job): void {
-    this.api.updateJob(job.id, { saved: !job.saved }).subscribe(() => this.loadJobs());
+    this.api.updateJob(job.id, { saved: !job.saved }).subscribe(() => {
+      this.loadJobs();
+      this.api.stats().subscribe((s) => this.stats.set(s));
+    });
   }
 
   unhide(job: Job): void {
-    this.api.updateJob(job.id, { hidden: false }).subscribe(() => this.loadJobs());
+    this.api.updateJob(job.id, { hidden: false }).subscribe(() => {
+      this.loadJobs();
+      this.api.stats().subscribe((s) => this.stats.set(s));
+    });
   }
 
   toggleExpand(id: string): void {
@@ -226,11 +235,15 @@ export class AppComponent implements OnInit {
     }).subscribe(() => {
       this.applyingId.set(null);
       this.loadJobs();
+      this.api.stats().subscribe((s) => this.stats.set(s));
     });
   }
 
   unapply(job: Job): void {
-    this.api.updateJob(job.id, { applied: false, appliedAt: null }).subscribe(() => this.loadJobs());
+    this.api.updateJob(job.id, { applied: false, appliedAt: null }).subscribe(() => {
+      this.loadJobs();
+      this.api.stats().subscribe((s) => this.stats.set(s));
+    });
   }
 
   scorePct(score: number): number {

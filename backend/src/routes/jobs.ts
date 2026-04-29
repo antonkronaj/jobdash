@@ -138,13 +138,19 @@ jobsRouter.get('/stats', (_req, res) => {
   const visible = (
     db.prepare('SELECT COUNT(*) as c FROM jobs WHERE hidden = 0').get() as { c: number }
   ).c;
+  const hidden = (
+    db.prepare('SELECT COUNT(*) as c FROM jobs WHERE hidden = 1').get() as { c: number }
+  ).c;
   const saved = (
-    db.prepare('SELECT COUNT(*) as c FROM jobs WHERE saved = 1').get() as { c: number }
+    db.prepare('SELECT COUNT(*) as c FROM jobs WHERE saved = 1 AND hidden = 0').get() as { c: number }
+  ).c;
+  const applied = (
+    db.prepare('SELECT COUNT(*) as c FROM jobs WHERE applied = 1 AND hidden = 0').get() as { c: number }
   ).c;
   const lastRun = db
     .prepare('SELECT ran_at, fetched_count, new_count, error FROM refresh_log ORDER BY id DESC LIMIT 1')
     .get() as
     | { ran_at: string; fetched_count: number; new_count: number; error: string | null }
     | undefined;
-  res.json({ total, visible, saved, lastRun: lastRun ?? null });
+  res.json({ total, visible, hidden, saved, applied, lastRun: lastRun ?? null });
 });

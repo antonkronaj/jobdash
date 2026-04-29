@@ -58,7 +58,9 @@ export interface ApiKeysUpdate {
 export interface Stats {
   total: number;
   visible: number;
+  hidden: number;
   saved: number;
+  applied: number;
   lastRun: {
     ran_at: string;
     fetched_count: number;
