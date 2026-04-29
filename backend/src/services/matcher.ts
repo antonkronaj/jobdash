@@ -1,35 +1,10 @@
 import natural from 'natural';
 import { extractTerms } from './resumeParser.js';
-import { pipeline, env } from '@huggingface/transformers';
-
-// Cache model in ~/.cache/huggingface (default); disable local model check
-env.allowLocalModels = false;
+import { embeddingClient } from './embeddingClient.js';
 
 export interface MatchResult {
   score: number;
   matchedTerms: string[];
-}
-
-// Lazy singleton — loads once on first call (~25 MB quantized ONNX download)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _embedder: any = null;
-
-async function getEmbedder(): Promise<any> {
-  if (!_embedder) {
-    _embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
-      dtype: 'q8',
-    });
-  }
-  return _embedder;
-}
-
-/** Mean-pool the token embeddings and L2-normalise the result. */
-async function embed(texts: string[]): Promise<number[][]> {
-  if (texts.length === 0) return [];
-  const embedder = await getEmbedder();
-  const output = await (embedder as any)(texts, { pooling: 'mean', normalize: true });
-  // output.tolist() → number[][]
-  return (output as any).tolist() as number[][];
 }
 
 /** Dot product of two L2-normalised vectors == cosine similarity. */
@@ -116,7 +91,7 @@ export async function scoreJobs(
       (j) => `${j.title}. ${(j.description ?? '').slice(0, 800)}`,
     );
 
-    const [resumeVecs, ...jobVecs] = await embed([resumeInput, ...jobTexts]);
+    const [resumeVecs, ...jobVecs] = await embeddingClient.embed([resumeInput, ...jobTexts]);
     embeddingScores = jobVecs.map((vec) => Math.max(0, dotProduct(resumeVecs, vec)));
   } catch (err) {
     console.error('[matcher] embedding failed, falling back to TF-IDF only:', err);
