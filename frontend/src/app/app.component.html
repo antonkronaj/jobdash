@@ -16,77 +16,20 @@
   <div class="body">
 
     <!-- Sidebar -->
-    <aside class="sidebar">
-
-      <div class="sb-group">
-        <div class="sb-search-wrap">
-          <span class="sb-search-icon">⌕</span>
-          <input
-            type="search"
-            class="sb-search"
-            placeholder="Search jobs…"
-            [ngModel]="searchText()"
-            (ngModelChange)="searchText.set($event)" />
-          <button class="sb-search-clear" *ngIf="searchText()" (click)="searchText.set('')" title="Clear">✕</button>
-        </div>
-      </div>
-
-      <div class="sb-group">
-        <div class="sb-heading">Filters</div>
-        <div class="sb-source" [class.active]="savedOnly()" [class.dim]="refreshing()" (click)="!refreshing() && savedOnly.set(!savedOnly()); loadJobs()">
-          <span class="src-dot" [class.active]="savedOnly()"></span>
-          <span class="src-name">Saved only</span>
-          <span class="src-count">{{ stats()?.saved || 0 }}</span>
-        </div>
-        <div class="sb-source" [class.active]="appliedOnly()" [class.dim]="refreshing()" (click)="!refreshing() && appliedOnly.set(!appliedOnly()); loadJobs()">
-          <span class="src-dot" [class.active]="appliedOnly()"></span>
-          <span class="src-name">Applied only</span>
-          <span class="src-count">{{ stats()?.applied || 0 }}</span>
-        </div>
-        <div class="sb-source" [class.active]="showHidden()" [class.dim]="refreshing()" (click)="!refreshing() && showHidden.set(!showHidden()); loadJobs()">
-          <span class="src-dot" [class.active]="showHidden()"></span>
-          <span class="src-name">Show hidden</span>
-          <span class="src-count">{{ stats()?.hidden || 0 }}</span>
-        </div>
-        <div class="sb-source" [class.active]="usOnly()" [class.dim]="refreshing()" (click)="!refreshing() && usOnly.set(!usOnly())">
-          <span class="src-dot" [class.active]="usOnly()"></span>
-          <span class="src-name">US only</span>
-        </div>
-      </div>
-
-      <div class="sb-group">
-        <div class="sb-heading">Posted within</div>
-        <select class="sb-select" [ngModel]="postedWithin()" (ngModelChange)="postedWithin.set($event ? +$event : null)" [disabled]="refreshing()">
-          <option [ngValue]="null">Any time</option>
-          <option value="1">24 hours</option>
-          <option value="7">7 days</option>
-          <option value="30">30 days</option>
-        </select>
-      </div>
-
-      <div class="sb-group">
-        <div class="sb-heading">
-          Min score
-          <span class="sb-value">{{ scorePct(minScore()) }}%</span>
-        </div>
-        <input type="range" class="sb-range" min="0" max="1" step="0.05"
-               [ngModel]="minScore()" (ngModelChange)="minScore.set($event); loadJobs()"
-               [disabled]="refreshing()" />
-      </div>
-
-      <div class="sb-group" *ngIf="sources().length">
-        <div class="sb-heading">Sources</div>
-        <div class="sb-source" *ngFor="let s of sources()"
-             [class.active]="selectedSource() === s.source"
-             [class.dim]="refreshing()"
-             (click)="!refreshing() && selectedSource.set(selectedSource() === s.source ? null : s.source)">
-          <span class="src-dot" [attr.data-source]="s.source" [class.active]="selectedSource() === s.source"></span>
-          <span class="src-name">{{ s.source }}</span>
-          <span class="src-count">{{ s.count }}</span>
-        </div>
-      </div>
-
-    </aside>
+    <app-sidebar
+      [searchText]="searchText"
+      [savedOnly]="savedOnly"
+      [appliedOnly]="appliedOnly"
+      [showHidden]="showHidden"
+      [usOnly]="usOnly"
+      [postedWithin]="postedWithin"
+      [minScore]="minScore"
+      [selectedSource]="selectedSource"
+      [stats]="stats"
+      [sources]="sources"
+      [refreshing]="refreshing"
+      (filterChanged)="loadJobs()">
+    </app-sidebar>
 
     <!-- Main content -->
     <main class="content">
@@ -97,239 +40,45 @@
       </div>
 
       <div class="job-list">
-        <div class="job-card"
-             *ngFor="let job of visibleJobs()"
-             [class.is-expanded]="expandedId() === job.id"
-             [class.is-applied]="job.applied"
-             [class.is-hidden]="job.hidden">
-
-          <div class="jc-main" (click)="toggleExpand(job.id)">
-            <div class="jc-header">
-              <div class="jc-title-row">
-                <span class="score-pill" [style.background]="scoreColor(job.score)">{{ scorePct(job.score) }}</span>
-                <span class="jc-title">{{ job.title }}</span>
-                <span class="jr-date" *ngIf="job.postedAt">{{ job.postedAt | date: 'MMM d' }}</span>
-              </div>
-              <div class="jc-meta-row">
-                <span class="jc-company" *ngIf="job.company">{{ job.company }}</span>
-                <span *ngIf="job.company && job.location" class="meta-dot">·</span>
-                <span class="jc-location" *ngIf="job.location">{{ job.location }}</span>
-                <span *ngIf="(job.company || job.location) && job.salary" class="meta-dot">·</span>
-                <span class="jc-salary" *ngIf="job.salary">{{ job.salary }}</span>
-              </div>
-            </div>
-
-            <div class="jc-footer">
-              <div class="jr-tags">
-                <span class="src-tag" [attr.data-source]="job.source">{{ job.source }}</span>
-                <span class="remote-tag" *ngIf="job.remote">remote</span>
-              </div>
-              <div class="flex-1"></div>
-              <div class="jr-actions" (click)="$event.stopPropagation()">
-                <a class="act-btn" [href]="job.url" target="_blank" rel="noopener" title="Open">↗</a>
-                <button class="act-btn" [class.on]="job.saved" (click)="toggleSave(job)" title="Save">{{ job.saved ? '★' : '☆' }}</button>
-                <button class="act-btn apply" *ngIf="!job.applied" (click)="openApply(job)" title="Mark applied">✓</button>
-                <button class="act-btn apply on" *ngIf="job.applied" (click)="unapply(job)" title="Remove applied">✓</button>
-                <button class="act-btn" *ngIf="!job.hidden" (click)="hide(job)" title="Hide">✕</button>
-                <button class="act-btn" *ngIf="job.hidden" (click)="unhide(job)" title="Unhide">↺</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Matched terms (expanded only) -->
-          <div class="jr-terms" *ngIf="expandedId() === job.id && job.matchedTerms.length">
-            <span class="jr-terms-label">Matched terms</span>
-            <span class="term-chip" *ngFor="let t of job.matchedTerms">{{ t }}</span>
-          </div>
-          <div class="jr-terms jr-terms-empty"
-               *ngIf="expandedId() === job.id && !job.matchedTerms.length">
-            <span class="jr-terms-label">Matched terms</span>
-            <span class="text-muted small">No resume term overlap</span>
-          </div>
-
-          <!-- Applied summary bar -->
-          <div class="applied-bar" *ngIf="job.applied && applyingId() !== job.id" (click)="$event.stopPropagation()">
-            <span class="applied-date">✓ Applied {{ job.appliedAt ? (job.appliedAt | date: 'mediumDate') : '' }}</span>
-            <span class="applied-notes" *ngIf="job.notes">{{ job.notes }}</span>
-            <button class="link-btn" (click)="openApply(job)">Edit</button>
-          </div>
-
-          <!-- Apply panel -->
-          <div class="apply-panel" *ngIf="applyingId() === job.id" (click)="$event.stopPropagation()">
-            <div class="apply-fields">
-              <label>Date applied
-                <input type="date" [ngModel]="applyDraft().appliedAt" (ngModelChange)="setApplyDate($event)" />
-              </label>
-              <label class="notes-label">Notes
-                <textarea rows="2" placeholder="Recruiter, salary, follow-up…"
-                  [ngModel]="applyDraft().notes" (ngModelChange)="setApplyNotes($event)"></textarea>
-              </label>
-            </div>
-            <div class="apply-actions">
-              <button (click)="applyingId.set(null)">Cancel</button>
-              <button class="primary" (click)="saveApply(job)">Save</button>
-            </div>
-          </div>
-
-          <!-- Description (expanded only) -->
-          <div class="jr-desc" *ngIf="expandedId() === job.id && job.description">
-            <markdown [data]="job.description"></markdown>
-          </div>
-
-        </div>
+        <app-job-card
+          *ngFor="let job of visibleJobs()"
+          [job]="job"
+          [expanded]="expandedId() === job.id"
+          [applying]="applyingId() === job.id"
+          [applyDraft]="applyDraft()"
+          (toggleExpand)="toggleExpand($event)"
+          (toggleSave)="toggleSave($event)"
+          (openApply)="openApply($event)"
+          (unapply)="unapply($event)"
+          (hide)="hide($event)"
+          (unhide)="unhide($event)"
+          (saveApply)="saveApply($event)"
+          (cancelApply)="applyingId.set(null)"
+          (setApplyDate)="setApplyDate($event)"
+          (setApplyNotes)="setApplyNotes($event)">
+        </app-job-card>
       </div>
     </main>
-
   </div>
 
-  <!-- ── Settings drawer ───────────────────────────────────────────────── -->
-  <div class="drawer-backdrop" *ngIf="settingsOpen()" (click)="settingsOpen.set(false)"></div>
-  <aside class="settings-drawer" [class.open]="settingsOpen()">
-    <div class="dw-header">
-      <span class="dw-title">Settings</span>
-      <button class="dw-close" (click)="settingsOpen.set(false)">✕</button>
-    </div>
-    <div class="dw-body">
+  <app-settings-drawer
+    [isOpen]="settingsOpen()"
+    [settings]="settings()"
+    [resume]="resume()"
+    [keys]="keys()"
+    [uploading]="uploading()"
+    (close)="settingsOpen.set(false)"
+    (saveSettings)="onSaveSettings($event)"
+    (uploadResume)="onFileSelected($event)"
+    (saveKeys)="onSaveKeys($event)">
+  </app-settings-drawer>
 
-      <div class="dw-section">
-        <div class="dw-section-title">Job search</div>
-        <label class="dw-field">
-          Title
-          <input type="text" [ngModel]="settings().title" (ngModelChange)="updateTitle($event)" placeholder="Software Engineer" />
-        </label>
-        <label class="dw-field">
-          Location
-          <input type="text" [ngModel]="settings().location" (ngModelChange)="updateLocation($event)" placeholder="New York, NY" />
-        </label>
-        <label class="dw-check">
-          <input type="checkbox" [ngModel]="settings().includeRemote" (ngModelChange)="updateIncludeRemote($event)" />
-          Include remote jobs
-        </label>
-        <button class="primary sm" (click)="saveSettings()">Save</button>
-      </div>
+  <app-add-job-modal
+    [isOpen]="addOpen()"
+    (close)="addOpen.set(false)"
+    (save)="onSaveManualJob($event)">
+  </app-add-job-modal>
 
-      <div class="dw-section">
-        <div class="dw-section-title">Resume</div>
-        <div class="resume-info" *ngIf="resume().uploaded; else noResume">
-          <span class="resume-name">{{ resume().filename }}</span>
-          <span class="text-muted">{{ resume().uploadedAt | date: 'mediumDate' }}</span>
-        </div>
-        <ng-template #noResume>
-          <p class="text-muted small">No resume uploaded — scores will be 0</p>
-        </ng-template>
-        <label class="file-btn">
-          <input type="file" accept="application/pdf" (change)="onResumeSelected($event)" hidden />
-          {{ uploading() ? 'Uploading…' : (resume().uploaded ? 'Replace PDF' : 'Upload PDF') }}
-        </label>
-      </div>
-
-      <div class="dw-section">
-        <div class="dw-section-title">
-          API keys
-          <span class="key-status-inline">
-            Adzuna <b [class.ok]="keys().adzunaAppId && keys().adzunaAppKey">{{ keys().adzunaAppId && keys().adzunaAppKey ? '✓' : '✕' }}</b>
-            · Findwork <b [class.ok]="keys().findworkApiKey">{{ keys().findworkApiKey ? '✓' : '✕' }}</b>
-          </span>
-        </div>
-        <p class="text-muted small">Leave blank to keep existing value.</p>
-        <div class="key-grid">
-          <label class="dw-field">Adzuna App ID
-            <input type="password" autocomplete="off" placeholder="••••••••" (input)="updateKeyDraft('adzunaAppId', $any($event.target).value)" />
-          </label>
-          <label class="dw-field">Adzuna App Key
-            <input type="password" autocomplete="off" placeholder="••••••••" (input)="updateKeyDraft('adzunaAppKey', $any($event.target).value)" />
-          </label>
-          <label class="dw-field">Country
-            <input type="text" [attr.placeholder]="keys().adzunaCountry" (input)="updateKeyDraft('adzunaCountry', $any($event.target).value)" />
-          </label>
-          <label class="dw-field">Findwork Token
-            <input type="password" autocomplete="off" placeholder="••••••••" (input)="updateKeyDraft('findworkApiKey', $any($event.target).value)" />
-          </label>
-        </div>
-        <button class="primary sm" (click)="saveKeys()">Save keys</button>
-      </div>
-
-    </div>
-  </aside>
-
-  <!-- ── Add Job modal ────────────────────────────────────────────────── -->
-  <div class="drawer-backdrop" *ngIf="addOpen()" (click)="addOpen.set(false)"></div>
-  <div class="modal-wrap" *ngIf="addOpen()">
-    <aside class="modal">
-      <div class="dw-header">
-        <span class="dw-title">Add Job Manually</span>
-        <button class="dw-close" (click)="addOpen.set(false)">✕</button>
-      </div>
-      <div class="dw-body">
-        <div class="dw-section">
-          <label class="dw-field">
-            Title *
-            <input type="text" [(ngModel)]="addDraft().title" placeholder="Software Engineer" />
-          </label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <label class="dw-field">
-              Company
-              <input type="text" [(ngModel)]="addDraft().company" placeholder="Acme Inc." />
-            </label>
-            <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;">
-              <label class="dw-field">
-                Location
-                <input type="text" [(ngModel)]="addDraft().location" placeholder="Remote / New York" />
-              </label>
-              <label class="dw-check" style="padding-bottom: 8px;">
-                <input type="checkbox" [(ngModel)]="addDraft().remote" />
-                Remote
-              </label>
-            </div>
-          </div>
-          <label class="dw-field">
-            URL
-            <input type="text" [(ngModel)]="addDraft().url" placeholder="https://..." />
-          </label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end;">
-            <label class="dw-field">
-              Salary
-              <input type="text" [(ngModel)]="addDraft().salary" placeholder="$120k - $150k" />
-            </label>
-            <label class="dw-field">
-              Date Posted
-              <input type="date" [(ngModel)]="addDraft().postedAt" />
-            </label>
-          </div>
-          <label class="dw-field">
-            Description (Markdown supported)
-            <textarea rows="5" [(ngModel)]="addDraft().description" placeholder="Paste job description here for matching..."></textarea>
-          </label>
-          <div *ngIf="addDraft().description" class="markdown-preview">
-            <div class="preview-label">Preview:</div>
-            <markdown [data]="addDraft().description"></markdown>
-          </div>
-          <div class="dw-actions" style="justify-content: flex-end; margin-top: 12px;">
-            <button (click)="addOpen.set(false)">Cancel</button>
-            <button class="primary" (click)="saveManualJob()">Add Job</button>
-          </div>
-        </div>
-      </div>
-    </aside>
-  </div>
-
-  <!-- ── Status bar ────────────────────────────────────────────────────── -->
-  <footer class="statusbar">
-    <ng-container *ngIf="stats() as s">
-      <span>{{ s.visible }} visible</span>
-      <span class="sb-sep">·</span>
-      <span>{{ s.saved }} saved</span>
-      <span class="sb-sep">·</span>
-      <span>{{ s.applied }} applied</span>
-      <span class="sb-sep">·</span>
-      <span>{{ s.hidden }} hidden</span>
-      <span class="sb-sep">·</span>
-      <span>{{ s.total }} total</span>
-      <ng-container *ngIf="s.lastRun">
-        <span class="sb-sep">·</span>
-        <span>last fetch {{ s.lastRun.ran_at | date: 'short' }}</span>
-      </ng-container>
-    </ng-container>
-  </footer>
+  <app-status-bar [stats]="stats()"></app-status-bar>
 
 </div>

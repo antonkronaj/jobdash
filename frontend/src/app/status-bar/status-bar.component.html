@@ -1,0 +1,17 @@
+<footer class="statusbar">
+  <ng-container *ngIf="stats() as s">
+    <span>{{ s.visible }} visible</span>
+    <span class="sb-sep">·</span>
+    <span>{{ s.saved }} saved</span>
+    <span class="sb-sep">·</span>
+    <span>{{ s.applied }} applied</span>
+    <span class="sb-sep">·</span>
+    <span>{{ s.hidden }} hidden</span>
+    <span class="sb-sep">·</span>
+    <span>{{ s.total }} total</span>
+    <ng-container *ngIf="s.lastRun">
+      <span class="sb-sep">·</span>
+      <span>last fetch {{ s.lastRun.ran_at | date: 'short' }}</span>
+    </ng-container>
+  </ng-container>
+</footer>

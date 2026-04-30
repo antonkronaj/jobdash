@@ -1,0 +1,59 @@
+<div class="drawer-backdrop" *ngIf="isOpen()" (click)="onClose()"></div>
+<div class="modal-wrap" *ngIf="isOpen()">
+  <aside class="modal">
+    <div class="dw-header">
+      <span class="dw-title">Add Job Manually</span>
+      <button class="dw-close" (click)="onClose()">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="dw-section">
+        <label class="dw-field">
+          Title *
+          <input type="text" [(ngModel)]="draft().title" placeholder="Software Engineer" />
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <label class="dw-field">
+            Company
+            <input type="text" [(ngModel)]="draft().company" placeholder="Acme Inc." />
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;">
+            <label class="dw-field">
+              Location
+              <input type="text" [(ngModel)]="draft().location" placeholder="Remote / New York" />
+            </label>
+            <label class="dw-check" style="padding-bottom: 8px;">
+              <input type="checkbox" [(ngModel)]="draft().remote" />
+              Remote
+            </label>
+          </div>
+        </div>
+        <label class="dw-field">
+          URL
+          <input type="text" [(ngModel)]="draft().url" placeholder="https://..." />
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end;">
+          <label class="dw-field">
+            Salary
+            <input type="text" [(ngModel)]="draft().salary" placeholder="$120k - $150k" />
+          </label>
+          <label class="dw-field">
+            Date Posted
+            <input type="date" [(ngModel)]="draft().postedAt" />
+          </label>
+        </div>
+        <label class="dw-field">
+          Description (Markdown supported)
+          <textarea rows="5" [(ngModel)]="draft().description" placeholder="Paste job description here for matching..."></textarea>
+        </label>
+        <div *ngIf="draft().description" class="markdown-preview">
+          <div class="preview-label">Preview:</div>
+          <markdown [data]="draft().description"></markdown>
+        </div>
+        <div class="dw-actions" style="justify-content: flex-end; margin-top: 12px;">
+          <button (click)="onClose()">Cancel</button>
+          <button class="primary" (click)="onSave()">Add Job</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>

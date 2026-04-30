@@ -1,0 +1,301 @@
+.job-card {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: #fff;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+}
+
+.job-card:hover {
+  border-color: var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.job-card.is-expanded {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.job-card.is-applied {
+  border-left: 4px solid #34c759;
+}
+
+.job-card.is-hidden {
+  opacity: 0.55;
+}
+
+.jc-main {
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.jc-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.jc-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jc-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+  line-height: 1.2;
+}
+
+.jc-meta-row {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.jc-company {
+  font-weight: 500;
+  color: #444;
+}
+
+.jc-footer {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.score-pill {
+  min-width: 36px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.jr-tags { display: flex; gap: 6px; flex-shrink: 0; }
+
+.src-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f1f1f5;
+  color: #6e6e73;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+.src-tag[data-source=adzuna]   { background: #dbeafe; color: #1e40af; }
+.src-tag[data-source=themuse]  { background: #ffedd5; color: #c2410c; }
+.src-tag[data-source=remoteok] { background: #dcfce7; color: #166534; }
+.src-tag[data-source=workable] { background: #ede9fe; color: #6d28d9; }
+.src-tag[data-source=findwork] { background: #fce7f3; color: #9d174d; }
+.src-tag[data-source=manual]   { background: #f1f5f9; color: #475569; }
+
+.remote-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #dcfce7;
+  color: #166534;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+
+.jr-date { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+
+.jc-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.jr-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #f5f5f7;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  color: var(--muted);
+  text-decoration: none;
+  font-family: inherit;
+  padding: 0;
+  transition: all 0.1s;
+}
+.act-btn:hover { background: #e8e8ed; color: #1d1d1f; border-color: var(--border); }
+.act-btn.on { color: #f59e0b; background: #fffbeb; border-color: #fef3c7; }
+.act-btn.apply.on { color: #34c759; background: #f0fdf4; border-color: #bbf7d0; font-weight: 700; }
+
+.jr-terms {
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  background: #f8fafc;
+  border-top: 1px solid var(--border-light);
+}
+
+.jr-terms-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  margin-right: 4px;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.term-chip {
+  font-size: 10px;
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid #c7d2fe;
+  font-weight: 500;
+}
+
+.jr-terms-empty .text-muted { font-size: 11px; font-style: italic; }
+
+.applied-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-top: 1px solid #bbf7d0;
+  font-size: 12px;
+}
+.applied-date { color: #16a34a; font-weight: 600; }
+.applied-notes { color: var(--muted); flex: 1; }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-weight: 500;
+}
+.link-btn:hover { text-decoration: underline; }
+
+.apply-panel {
+  padding: 12px;
+  border-top: 1px solid var(--border-light);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.apply-fields { display: flex; flex-direction: column; gap: 10px; }
+
+.apply-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.notes-label { width: 100%; }
+
+.apply-fields input[type=date],
+.apply-fields textarea {
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1d1d1f;
+  resize: vertical;
+}
+
+.apply-fields input[type=date]:focus,
+.apply-fields textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.apply-actions { display: flex; gap: 8px; }
+
+.apply-actions button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  color: #1d1d1f;
+  font-weight: 500;
+}
+
+.apply-actions button:hover { background: #f5f5f7; }
+
+.apply-actions button.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.apply-actions button.primary:hover { background: #0055aa; }
+
+.jr-desc {
+  padding: 12px;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.6;
+  border-top: 1px solid var(--border-light);
+  background: #fff;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.jr-desc markdown p { margin: 0 0 1em 0; }
+.jr-desc markdown p:last-child { margin-bottom: 0; }
+.jr-desc markdown h1, .jr-desc markdown h2, .jr-desc markdown h3 { margin: 1em 0 0.5em 0; font-size: 1.1em; }
+.jr-desc markdown ul, .jr-desc markdown ol { padding-left: 20px; margin-bottom: 1em; }
+
+.meta-dot { margin: 0 4px; color: #ccc; }

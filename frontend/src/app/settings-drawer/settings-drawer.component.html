@@ -1,0 +1,67 @@
+<div class="drawer-backdrop" *ngIf="isOpen()" (click)="onClose()"></div>
+<aside class="settings-drawer" [class.open]="isOpen()">
+  <div class="dw-header">
+    <span class="dw-title">Settings</span>
+    <button class="dw-close" (click)="onClose()">✕</button>
+  </div>
+  <div class="dw-body">
+
+    <div class="dw-section">
+      <div class="dw-section-title">Job search</div>
+      <label class="dw-field">
+        Title
+        <input type="text" [ngModel]="settings().title" (ngModelChange)="updateSetting('title', $event)" placeholder="Software Engineer" />
+      </label>
+      <label class="dw-field">
+        Location
+        <input type="text" [ngModel]="settings().location" (ngModelChange)="updateSetting('location', $event)" placeholder="New York, NY" />
+      </label>
+      <label class="dw-check">
+        <input type="checkbox" [ngModel]="settings().includeRemote" (ngModelChange)="updateSetting('includeRemote', $event)" />
+        Include remote jobs
+      </label>
+    </div>
+
+    <div class="dw-section">
+      <div class="dw-section-title">Resume</div>
+      <div class="resume-info" *ngIf="resume().uploaded; else noResume">
+        <span class="resume-name">{{ resume().filename }}</span>
+        <span class="text-muted">{{ resume().uploadedAt | date: 'mediumDate' }}</span>
+      </div>
+      <ng-template #noResume>
+        <p class="text-muted small">No resume uploaded — scores will be 0</p>
+      </ng-template>
+      <label class="file-btn">
+        <input type="file" accept="application/pdf" (change)="onResumeSelected($event)" hidden />
+        {{ uploading() ? 'Uploading…' : (resume().uploaded ? 'Replace PDF' : 'Upload PDF') }}
+      </label>
+    </div>
+
+    <div class="dw-section">
+      <div class="dw-section-title">
+        API keys
+        <span class="key-status-inline">
+          Adzuna <b [class.ok]="keys().adzunaAppId && keys().adzunaAppKey">{{ keys().adzunaAppId && keys().adzunaAppKey ? '✓' : '✕' }}</b>
+          · Findwork <b [class.ok]="keys().findworkApiKey">{{ keys().findworkApiKey ? '✓' : '✕' }}</b>
+        </span>
+      </div>
+      <p class="text-muted small">Leave blank to keep existing value.</p>
+      <div class="key-grid">
+        <label class="dw-field">Adzuna App ID
+          <input type="password" autocomplete="off" placeholder="••••••••" (input)="updateKeyDraft('adzunaAppId', $any($event.target).value)" />
+        </label>
+        <label class="dw-field">Adzuna App Key
+          <input type="password" autocomplete="off" placeholder="••••••••" (input)="updateKeyDraft('adzunaAppKey', $any($event.target).value)" />
+        </label>
+        <label class="dw-field">Country
+          <input type="text" [attr.placeholder]="keys().adzunaCountry" (input)="updateKeyDraft('adzunaCountry', $any($event.target).value)" />
+        </label>
+        <label class="dw-field">Findwork Token
+          <input type="password" autocomplete="off" placeholder="••••••••" (input)="updateKeyDraft('findworkApiKey', $any($event.target).value)" />
+        </label>
+      </div>
+      <button class="primary sm" (click)="onSaveKeys()">Save keys</button>
+    </div>
+
+  </div>
+</aside>

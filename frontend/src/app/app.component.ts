@@ -4,10 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { MarkdownModule } from 'ngx-markdown';
 import { ApiService, Job, Settings, ResumeInfo, Stats, ApiKeysStatus, ApiKeysUpdate, RefreshEvent } from './api.service';
 
+import { SidebarComponent } from './sidebar/sidebar.component';
+import { StatusBarComponent } from './status-bar/status-bar.component';
+import { AddJobModalComponent } from './add-job-modal/add-job-modal.component';
+import { SettingsDrawerComponent } from './settings-drawer/settings-drawer.component';
+
+import { JobCardComponent } from './job-card/job-card.component';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, MarkdownModule],
+  imports: [CommonModule, FormsModule, MarkdownModule, SidebarComponent, StatusBarComponent, AddJobModalComponent, SettingsDrawerComponent, JobCardComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -20,29 +27,8 @@ export class AppComponent implements OnInit {
   stats = signal<Stats | null>(null);
   sources = signal<{ source: string; count: number }[]>([]);
   keys = signal<ApiKeysStatus>({ adzunaAppId: false, adzunaAppKey: false, adzunaCountry: 'us', findworkApiKey: false });
-  keysOpen = signal(false);
-  keysDraft = signal<ApiKeysUpdate>({});
   settingsOpen = signal(false);
   addOpen = signal(false);
-  addDraft = signal<{
-    title: string;
-    company: string;
-    location: string;
-    remote: boolean;
-    url: string;
-    description: string;
-    salary: string;
-    postedAt: string;
-  }>({
-    title: '',
-    company: '',
-    location: '',
-    remote: false,
-    url: '',
-    description: '',
-    salary: '',
-    postedAt: new Date().toISOString().slice(0, 10),
-  });
 
   showHidden = signal(false);
   savedOnly = signal(false);
@@ -110,23 +96,17 @@ export class AppComponent implements OnInit {
     this.api.getKeys().subscribe((k) => this.keys.set(k));
   }
 
-  updateKeyDraft(field: keyof ApiKeysUpdate, value: string) {
-    this.keysDraft.update((d) => ({ ...d, [field]: value }));
-  }
 
-  saveKeys(): void {
-    const patch = this.keysDraft();
+  onSaveKeys(patch: ApiKeysUpdate): void {
     if (Object.keys(patch).length === 0) {
-      this.keysOpen.set(false);
       return;
     }
     this.api.saveKeys(patch).subscribe(() => {
       this.message.set('API keys saved.');
-      this.keysDraft.set({});
-      this.keysOpen.set(false);
       this.api.getKeys().subscribe((k) => this.keys.set(k));
     });
   }
+
 
   loadJobs(): void {
     this.loading.set(true);
@@ -186,9 +166,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  onResumeSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+  onFileSelected(file: File): void {
     if (!file) return;
     this.uploading.set(true);
     this.message.set('Parsing resume and rescoring jobs…');
@@ -206,11 +184,20 @@ export class AppComponent implements OnInit {
     });
   }
 
-  saveSettings(): void {
-    this.api.saveSettings(this.settings()).subscribe(() => {
+  onResumeSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.onFileSelected(file);
+  }
+
+  onSaveSettings(s: Settings): void {
+    this.api.saveSettings(s).subscribe(() => {
+      this.settings.set(s);
       this.message.set('Settings saved. Click Refresh to apply.');
     });
   }
+
 
   hide(job: Job): void {
     this.api.updateJob(job.id, { hidden: true }).subscribe(() => {
@@ -261,8 +248,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  saveManualJob(): void {
-    const draft = this.addDraft();
+  onSaveManualJob(draft: any): void {
     if (!draft.title) {
       this.message.set('Title is required');
       return;
@@ -271,16 +257,6 @@ export class AppComponent implements OnInit {
       next: () => {
         this.message.set('Job added successfully');
         this.addOpen.set(false);
-        this.addDraft.set({
-          title: '',
-          company: '',
-          location: '',
-          remote: false,
-          url: '',
-          description: '',
-          salary: '',
-          postedAt: new Date().toISOString().slice(0, 10),
-        });
         this.loadJobs();
         this.api.stats().subscribe((s) => this.stats.set(s));
         this.api.getSources().subscribe((s) => this.sources.set(s));
@@ -291,24 +267,11 @@ export class AppComponent implements OnInit {
     });
   }
 
+
   unapply(job: Job): void {
     this.api.updateJob(job.id, { applied: false, appliedAt: null }).subscribe(() => {
       this.loadJobs();
       this.api.stats().subscribe((s) => this.stats.set(s));
     });
   }
-
-  scorePct(score: number): number {
-    return Math.round(score * 100);
-  }
-
-  scoreColor(score: number): string {
-    if (score >= 0.5) return '#10b981';
-    if (score >= 0.3) return '#f59e0b';
-    return '#64748b';
-  }
-
-  updateTitle(v: string) { this.settings.update((s) => ({ ...s, title: v })); }
-  updateLocation(v: string) { this.settings.update((s) => ({ ...s, location: v })); }
-  updateIncludeRemote(v: boolean) { this.settings.update((s) => ({ ...s, includeRemote: v })); }
 }
