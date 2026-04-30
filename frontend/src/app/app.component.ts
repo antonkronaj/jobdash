@@ -1,12 +1,13 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MarkdownModule } from 'ngx-markdown';
 import { ApiService, Job, Settings, ResumeInfo, Stats, ApiKeysStatus, ApiKeysUpdate, RefreshEvent } from './api.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MarkdownModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -22,6 +23,26 @@ export class AppComponent implements OnInit {
   keysOpen = signal(false);
   keysDraft = signal<ApiKeysUpdate>({});
   settingsOpen = signal(false);
+  addOpen = signal(false);
+  addDraft = signal<{
+    title: string;
+    company: string;
+    location: string;
+    remote: boolean;
+    url: string;
+    description: string;
+    salary: string;
+    postedAt: string;
+  }>({
+    title: '',
+    company: '',
+    location: '',
+    remote: false,
+    url: '',
+    description: '',
+    salary: '',
+    postedAt: new Date().toISOString().slice(0, 10),
+  });
 
   showHidden = signal(false);
   savedOnly = signal(false);
@@ -43,6 +64,7 @@ export class AppComponent implements OnInit {
 
   private isUS(job: Job): boolean {
     if (job.source === 'adzuna') return true;
+    if (job.source === 'manual') return true;
     if (!job.location) return true;
     const loc = job.location;
     if (/^(Remote|Flexible \/ Remote)$/i.test(loc.trim())) return true;
@@ -236,6 +258,36 @@ export class AppComponent implements OnInit {
       this.applyingId.set(null);
       this.loadJobs();
       this.api.stats().subscribe((s) => this.stats.set(s));
+    });
+  }
+
+  saveManualJob(): void {
+    const draft = this.addDraft();
+    if (!draft.title) {
+      this.message.set('Title is required');
+      return;
+    }
+    this.api.addJob(draft).subscribe({
+      next: () => {
+        this.message.set('Job added successfully');
+        this.addOpen.set(false);
+        this.addDraft.set({
+          title: '',
+          company: '',
+          location: '',
+          remote: false,
+          url: '',
+          description: '',
+          salary: '',
+          postedAt: new Date().toISOString().slice(0, 10),
+        });
+        this.loadJobs();
+        this.api.stats().subscribe((s) => this.stats.set(s));
+        this.api.getSources().subscribe((s) => this.sources.set(s));
+      },
+      error: (err) => {
+        this.message.set(`Failed to add job: ${err.error?.error ?? (err.message || 'Unknown error')}`);
+      },
     });
   }
 

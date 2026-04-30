@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { refreshJobs } from '../services/refresh.js';
+import { scoreJobs } from '../services/matcher.js';
 
 export const jobsRouter = Router();
 
@@ -124,6 +125,70 @@ jobsRouter.patch('/:id', (req, res) => {
   values.push(id);
   db.prepare(`UPDATE jobs SET ${fields.join(', ')} WHERE id = ?`).run(...values);
   res.json({ ok: true });
+});
+
+jobsRouter.post('/', async (req, res) => {
+  const { title, company, location, remote, url, description, salary, postedAt } = req.body as {
+    title: string;
+    company?: string;
+    location?: string;
+    remote?: boolean;
+    url?: string;
+    description?: string;
+    salary?: string;
+    postedAt?: string;
+  };
+
+  if (!title) {
+    res.status(400).json({ error: 'title is required' });
+    return;
+  }
+
+  const source = 'manual';
+  const sourceId = Date.now().toString();
+  const id = `${source}:${sourceId}`;
+  const fetchedAt = new Date().toISOString();
+
+  const resume = db.prepare('SELECT text FROM resume WHERE id = 1').get() as
+    | { text: string }
+    | undefined;
+
+  let score = 0;
+  let matchedTerms: string[] = [];
+
+  if (resume?.text) {
+    const results = await scoreJobs(resume.text, [{ id, title, description: description ?? '' }]);
+    const match = results.get(id);
+    if (match) {
+      score = match.score;
+      matchedTerms = match.matchedTerms;
+    }
+  }
+
+  try {
+    db.prepare(`
+      INSERT INTO jobs (id, source, source_id, title, company, location, remote, url, description, posted_at, salary, score, matched_terms, fetched_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      source,
+      sourceId,
+      title,
+      company ?? null,
+      location ?? null,
+      remote ? 1 : 0,
+      url ?? '',
+      description ?? null,
+      postedAt ?? null,
+      salary ?? null,
+      score,
+      JSON.stringify(matchedTerms),
+      fetchedAt,
+    );
+    res.json({ id, ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 jobsRouter.get('/sources', (_req, res) => {

@@ -230,6 +230,7 @@
 .src-dot[data-source=remoteok] { background: #166534; color: #166534; }
 .src-dot[data-source=workable] { background: #6d28d9; color: #6d28d9; }
 .src-dot[data-source=findwork] { background: #9d174d; color: #9d174d; }
+.src-dot[data-source=manual]   { background: #64748b; color: #64748b; }
 
 .src-name { flex: 1; }
 .src-count { font-size: 11px; color: var(--muted); }
@@ -364,6 +365,7 @@
 .src-tag[data-source=remoteok] { background: #dcfce7; color: #166534; }
 .src-tag[data-source=workable] { background: #ede9fe; color: #6d28d9; }
 .src-tag[data-source=findwork] { background: #fce7f3; color: #9d174d; }
+.src-tag[data-source=manual]   { background: #f1f5f9; color: #475569; }
 
 .remote-tag {
   font-size: 10px;
@@ -537,15 +539,50 @@
   line-height: 1.6;
   border-top: 1px solid var(--border-light);
   background: #fff;
+  max-height: 400px;
+  overflow-y: auto;
 }
-.jr-desc p { margin: 0; max-height: 400px; overflow-y: auto; }
+.jr-desc markdown p { margin: 0 0 1em 0; }
+.jr-desc markdown p:last-child { margin-bottom: 0; }
+.jr-desc markdown h1, .jr-desc markdown h2, .jr-desc markdown h3 { margin: 1em 0 0.5em 0; font-size: 1.1em; }
+.jr-desc markdown ul, .jr-desc markdown ol { padding-left: 20px; margin-bottom: 1em; }
 
 /* ── Settings drawer ──────────────────────────────────────────────────── */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.3);
   z-index: 100;
+  backdrop-filter: blur(1px);
+}
+
+.modal-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+  pointer-events: none;
+}
+
+.modal {
+  width: 460px;
+  max-width: 90vw;
+  max-height: 85vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  overflow: hidden;
+  animation: modal-in 0.2s ease-out;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .settings-drawer {
@@ -605,6 +642,26 @@
   flex-direction: column;
   gap: 10px;
 }
+
+.markdown-preview {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f9f9fb;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.preview-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.markdown-preview markdown p { margin: 0 0 0.5em 0; }
+.markdown-preview markdown p:last-child { margin-bottom: 0; }
 
 .dw-section-title {
   font-size: 10px;
@@ -684,6 +741,83 @@ button.primary {
 }
 button.primary:hover { background: #0055aa; }
 button.primary.sm { font-size: 12px; padding: 5px 12px; }
+
+.modal .dw-body {
+  padding: 16px;
+}
+
+.modal .dw-section {
+  border: none;
+  padding: 0;
+}
+
+.modal .dw-header {
+  padding: 0 16px;
+  height: 52px;
+}
+
+.modal .dw-title {
+  font-size: 15px;
+}
+
+.modal .dw-field {
+  gap: 5px;
+}
+
+.modal .dw-field input, .modal .dw-field textarea {
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+.dw-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.dw-actions button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  color: #1d1d1f;
+  font-weight: 500;
+}
+
+.dw-actions button:hover { background: #f5f5f7; }
+
+.dw-actions button.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  align-self: auto;
+}
+
+.dw-actions button.primary:hover { background: #0055aa; }
+
+.dw-field textarea {
+  background: #f5f5f7;
+  border: 1px solid var(--border-light);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #1d1d1f;
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: all 0.2s;
+  resize: vertical;
+}
+
+.dw-field textarea:focus {
+  background: #fff;
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: transparent;
+}
 
 .resume-info { display: flex; flex-direction: column; gap: 2px; }
 .resume-name { font-size: 13px; font-weight: 500; color: #1d1d1f; }

@@ -12,6 +12,12 @@ export function createApp(): Express {
   const app = express();
   app.use(cors());
   app.use(express.json({ limit: '2mb' }));
+  
+  // Request logging
+  app.use((req, _res, next) => {
+    console.log(`[api] ${req.method} ${req.url}`);
+    next();
+  });
 
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true });
@@ -20,6 +26,12 @@ export function createApp(): Express {
   app.use('/api/jobs', jobsRouter);
   app.use('/api/resume', resumeRouter);
   app.use('/api/settings', settingsRouter);
+
+  // 404 handler
+  app.use((req, res) => {
+    console.warn(`[api] 404 Not Found: ${req.method} ${req.url}`);
+    res.status(404).json({ error: `Not Found: ${req.method} ${req.url}` });
+  });
 
   return app;
 }

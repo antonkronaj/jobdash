@@ -141,6 +141,19 @@ export class ApiService {
     return this.http.patch<{ ok: boolean }>(`${API}/jobs/${encodeURIComponent(id)}`, patch);
   }
 
+  addJob(job: {
+    title: string;
+    company?: string;
+    location?: string;
+    remote?: boolean;
+    url?: string;
+    description?: string;
+    salary?: string;
+    postedAt?: string;
+  }): Observable<{ id: string; ok: boolean }> {
+    return this.http.post<{ id: string; ok: boolean }>(`${API}/jobs`, job);
+  }
+
   stats(): Observable<Stats> {
     return this.http.get<Stats>(`${API}/jobs/stats`);
   }

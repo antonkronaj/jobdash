@@ -8,6 +8,7 @@
             title="Fetch jobs from external sources (Adzuna, The Muse, RemoteOK, Workable, Findwork). This can take a moment.">
       ↻ {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
     </button>
+    <button class="tb-btn" (click)="addOpen.set(true)">+ Add job</button>
     <button class="tb-btn" (click)="settingsOpen.set(!settingsOpen())">⚙ Settings</button>
   </header>
 
@@ -172,7 +173,7 @@
 
           <!-- Description (expanded only) -->
           <div class="jr-desc" *ngIf="expandedId() === job.id && job.description">
-            <p>{{ job.description }}</p>
+            <markdown [data]="job.description"></markdown>
           </div>
 
         </div>
@@ -250,6 +251,67 @@
 
     </div>
   </aside>
+
+  <!-- ── Add Job modal ────────────────────────────────────────────────── -->
+  <div class="drawer-backdrop" *ngIf="addOpen()" (click)="addOpen.set(false)"></div>
+  <div class="modal-wrap" *ngIf="addOpen()">
+    <aside class="modal">
+      <div class="dw-header">
+        <span class="dw-title">Add Job Manually</span>
+        <button class="dw-close" (click)="addOpen.set(false)">✕</button>
+      </div>
+      <div class="dw-body">
+        <div class="dw-section">
+          <label class="dw-field">
+            Title *
+            <input type="text" [(ngModel)]="addDraft().title" placeholder="Software Engineer" />
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <label class="dw-field">
+              Company
+              <input type="text" [(ngModel)]="addDraft().company" placeholder="Acme Inc." />
+            </label>
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;">
+              <label class="dw-field">
+                Location
+                <input type="text" [(ngModel)]="addDraft().location" placeholder="Remote / New York" />
+              </label>
+              <label class="dw-check" style="padding-bottom: 8px;">
+                <input type="checkbox" [(ngModel)]="addDraft().remote" />
+                Remote
+              </label>
+            </div>
+          </div>
+          <label class="dw-field">
+            URL
+            <input type="text" [(ngModel)]="addDraft().url" placeholder="https://..." />
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end;">
+            <label class="dw-field">
+              Salary
+              <input type="text" [(ngModel)]="addDraft().salary" placeholder="$120k - $150k" />
+            </label>
+            <label class="dw-field">
+              Date Posted
+              <input type="date" [(ngModel)]="addDraft().postedAt" />
+            </label>
+          </div>
+          <label class="dw-field">
+            Description (Markdown supported)
+            <textarea rows="5" [(ngModel)]="addDraft().description" placeholder="Paste job description here for matching..."></textarea>
+          </label>
+          <div *ngIf="addDraft().description" class="markdown-preview">
+            <div class="preview-label">Preview:</div>
+            <markdown [data]="addDraft().description"></markdown>
+          </div>
+          <div class="dw-actions" style="justify-content: flex-end; margin-top: 12px;">
+            <button (click)="addOpen.set(false)">Cancel</button>
+            <button class="primary" (click)="saveManualJob()">Add Job</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
 
   <!-- ── Status bar ────────────────────────────────────────────────────── -->
   <footer class="statusbar">
