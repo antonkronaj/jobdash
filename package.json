@@ -43,11 +43,28 @@
       "**/node_modules/onnxruntime-node/**/*",
       "**/node_modules/@huggingface/**/*"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "antonkronaj",
+      "repo": "jobdash"
+    },
     "mac": {
-      "target": { "target": "dmg", "arch": ["arm64"] },
+      "target": {
+        "target": "dmg",
+        "arch": [
+          "arm64"
+        ]
+      },
       "category": "public.app-category.productivity"
     },
-    "win": { "target": "nsis" },
-    "linux": { "target": "AppImage" }
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
   }
 }

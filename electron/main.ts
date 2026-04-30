@@ -1,7 +1,8 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, dialog, shell } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { AddressInfo } from 'node:net';
+import { autoUpdater } from 'electron-updater';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Dev mode opt-in via env var. Packaged apps always run in prod mode.
@@ -63,10 +64,34 @@ async function createWindow(port: number): Promise<void> {
   }
 }
 
+function initUpdater(): void {
+  autoUpdater.logger = null; // silence to console; swap for electron-log if desired
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Update ready',
+      message: 'A new version of jobdash has been downloaded. Restart now to apply it?',
+      buttons: ['Restart', 'Later'],
+      defaultId: 0,
+    }).then(({ response }) => {
+      if (response === 0) autoUpdater.quitAndInstall();
+    });
+  });
+
+  autoUpdater.checkForUpdates().catch((err) => {
+    console.warn('[updater] check failed:', err);
+  });
+}
+
 app.whenReady().then(async () => {
   const port = await startBackend();
   console.log(`[electron] backend bound to 127.0.0.1:${port}`);
   await createWindow(port);
+
+  if (app.isPackaged) initUpdater();
 
   app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) await createWindow(port);
