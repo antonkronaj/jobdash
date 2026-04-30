@@ -59,6 +59,7 @@ for (const sql of [
   'ALTER TABLE jobs ADD COLUMN applied INTEGER DEFAULT 0',
   'ALTER TABLE jobs ADD COLUMN applied_at TEXT',
   'ALTER TABLE jobs ADD COLUMN notes TEXT',
+  'ALTER TABLE jobs ADD COLUMN edited INTEGER DEFAULT 0',
 ]) {
   try { db.exec(sql); } catch { /* column already exists */ }
 }

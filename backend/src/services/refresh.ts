@@ -74,16 +74,16 @@ export async function refreshJobs(
     INSERT INTO jobs (id, source, source_id, title, company, location, remote, url, description, posted_at, salary, score, matched_terms, fetched_at)
     VALUES (@id, @source, @source_id, @title, @company, @location, @remote, @url, @description, @posted_at, @salary, @score, @matched_terms, @fetched_at)
     ON CONFLICT(source, source_id) DO UPDATE SET
-      title = excluded.title,
-      company = excluded.company,
-      location = excluded.location,
-      remote = excluded.remote,
-      url = excluded.url,
-      description = excluded.description,
-      posted_at = excluded.posted_at,
-      salary = excluded.salary,
-      score = excluded.score,
-      matched_terms = excluded.matched_terms,
+      title = CASE WHEN jobs.edited = 0 THEN excluded.title ELSE jobs.title END,
+      company = CASE WHEN jobs.edited = 0 THEN excluded.company ELSE jobs.company END,
+      location = CASE WHEN jobs.edited = 0 THEN excluded.location ELSE jobs.location END,
+      remote = CASE WHEN jobs.edited = 0 THEN excluded.remote ELSE jobs.remote END,
+      url = CASE WHEN jobs.edited = 0 THEN excluded.url ELSE jobs.url END,
+      description = CASE WHEN jobs.edited = 0 THEN excluded.description ELSE jobs.description END,
+      posted_at = CASE WHEN jobs.edited = 0 THEN excluded.posted_at ELSE jobs.posted_at END,
+      salary = CASE WHEN jobs.edited = 0 THEN excluded.salary ELSE jobs.salary END,
+      score = CASE WHEN jobs.edited = 0 THEN excluded.score ELSE jobs.score END,
+      matched_terms = CASE WHEN jobs.edited = 0 THEN excluded.matched_terms ELSE jobs.matched_terms END,
       fetched_at = excluded.fetched_at
   `);
 
@@ -134,7 +134,7 @@ export async function rescoreAll(): Promise<number> {
   if (!resume?.text) return 0;
 
   const jobs = db
-    .prepare('SELECT id, title, description FROM jobs')
+    .prepare('SELECT id, title, description FROM jobs WHERE edited = 0 AND id NOT LIKE "manual:%"')
     .all() as Array<{ id: string; title: string; description: string | null }>;
 
   const scores = await scoreJobs(resume.text, jobs);

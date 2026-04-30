@@ -8,7 +8,7 @@
             title="Fetch jobs from external sources (Adzuna, The Muse, RemoteOK, Workable, Findwork). This can take a moment.">
       ↻ {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
     </button>
-    <button class="tb-btn" (click)="addOpen.set(true)">+ Add job</button>
+    <button class="tb-btn" (click)="openAddModal()">+ Add job</button>
     <button class="tb-btn" (click)="settingsOpen.set(!settingsOpen())">⚙ Settings</button>
   </header>
 
@@ -55,7 +55,8 @@
           (saveApply)="saveApply($event)"
           (cancelApply)="applyingId.set(null)"
           (setApplyDate)="setApplyDate($event)"
-          (setApplyNotes)="setApplyNotes($event)">
+          (setApplyNotes)="setApplyNotes($event)"
+          (edit)="openEditModal($event)">
         </app-job-card>
       </div>
     </main>
@@ -75,6 +76,7 @@
 
   <app-add-job-modal
     [isOpen]="addOpen()"
+    [jobToEdit]="jobToEdit()"
     (close)="addOpen.set(false)"
     (save)="onSaveManualJob($event)">
   </app-add-job-modal>

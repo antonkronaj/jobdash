@@ -18,6 +18,7 @@ export class JobCardComponent {
   @Input({ required: true }) applyDraft = { appliedAt: '', notes: '' };
 
   @Output() toggleExpand = new EventEmitter<string>();
+  @Output() edit = new EventEmitter<Job>();
   @Output() toggleSave = new EventEmitter<Job>();
   @Output() openApply = new EventEmitter<Job>();
   @Output() unapply = new EventEmitter<Job>();
@@ -41,6 +42,11 @@ export class JobCardComponent {
 
   onToggleExpand() {
     this.toggleExpand.emit(this.job.id);
+  }
+
+  onEdit(event: Event) {
+    event.stopPropagation();
+    this.edit.emit(this.job);
   }
 
   onToggleSave(event: Event) {

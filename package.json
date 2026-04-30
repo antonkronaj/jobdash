@@ -27,6 +27,7 @@
   "build": {
     "appId": "dev.jobdash.app",
     "productName": "jobdash",
+    "icon": "build/icon",
     "includeSubNodeModules": true,
     "files": [
       "electron/dist/**/*",

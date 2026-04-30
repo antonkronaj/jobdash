@@ -29,6 +29,7 @@ export class AppComponent implements OnInit {
   keys = signal<ApiKeysStatus>({ adzunaAppId: false, adzunaAppKey: false, adzunaCountry: 'us', findworkApiKey: false });
   settingsOpen = signal(false);
   addOpen = signal(false);
+  jobToEdit = signal<Job | null>(null);
 
   showHidden = signal(false);
   savedOnly = signal(false);
@@ -253,18 +254,45 @@ export class AppComponent implements OnInit {
       this.message.set('Title is required');
       return;
     }
-    this.api.addJob(draft).subscribe({
-      next: () => {
-        this.message.set('Job added successfully');
-        this.addOpen.set(false);
-        this.loadJobs();
-        this.api.stats().subscribe((s) => this.stats.set(s));
-        this.api.getSources().subscribe((s) => this.sources.set(s));
-      },
-      error: (err) => {
-        this.message.set(`Failed to add job: ${err.error?.error ?? (err.message || 'Unknown error')}`);
-      },
-    });
+    const editJob = this.jobToEdit();
+    if (editJob) {
+      this.api.updateJob(editJob.id, draft).subscribe({
+        next: () => {
+          this.message.set('Job updated successfully');
+          this.addOpen.set(false);
+          this.jobToEdit.set(null);
+          this.loadJobs();
+          this.api.stats().subscribe((s) => this.stats.set(s));
+          this.api.getSources().subscribe((s) => this.sources.set(s));
+        },
+        error: (err) => {
+          this.message.set(`Failed to update job: ${err.error?.error ?? (err.message || 'Unknown error')}`);
+        },
+      });
+    } else {
+      this.api.addJob(draft).subscribe({
+        next: () => {
+          this.message.set('Job added successfully');
+          this.addOpen.set(false);
+          this.loadJobs();
+          this.api.stats().subscribe((s) => this.stats.set(s));
+          this.api.getSources().subscribe((s) => this.sources.set(s));
+        },
+        error: (err) => {
+          this.message.set(`Failed to add job: ${err.error?.error ?? (err.message || 'Unknown error')}`);
+        },
+      });
+    }
+  }
+
+  openAddModal() {
+    this.jobToEdit.set(null);
+    this.addOpen.set(true);
+  }
+
+  openEditModal(job: Job) {
+    this.jobToEdit.set(job);
+    this.addOpen.set(true);
   }
 
 

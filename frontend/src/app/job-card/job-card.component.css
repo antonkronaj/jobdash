@@ -54,11 +54,23 @@
 }
 
 .jc-title {
-  flex: 1;
   font-size: 14px;
   font-weight: 600;
   color: #1d1d1f;
   line-height: 1.2;
+}
+
+.edited-tag {
+  font-size: 9px;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .jc-meta-row {

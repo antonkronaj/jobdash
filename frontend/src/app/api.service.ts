@@ -26,6 +26,7 @@ export interface Job {
   appliedAt: string | null;
   notes: string | null;
   fetchedAt: string;
+  edited: boolean;
 }
 
 export interface Settings {
@@ -137,7 +138,21 @@ export class ApiService {
     });
   }
 
-  updateJob(id: string, patch: { hidden?: boolean; saved?: boolean; applied?: boolean; appliedAt?: string | null; notes?: string | null }): Observable<{ ok: boolean }> {
+  updateJob(id: string, patch: {
+    hidden?: boolean;
+    saved?: boolean;
+    applied?: boolean;
+    appliedAt?: string | null;
+    notes?: string | null;
+    title?: string;
+    company?: string | null;
+    location?: string | null;
+    remote?: boolean;
+    url?: string;
+    description?: string | null;
+    salary?: string | null;
+    postedAt?: string | null;
+  }): Observable<{ ok: boolean }> {
     return this.http.patch<{ ok: boolean }>(`${API}/jobs/${encodeURIComponent(id)}`, patch);
   }
 

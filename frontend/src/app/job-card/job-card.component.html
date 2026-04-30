@@ -9,6 +9,7 @@
         <div class="jc-title-row">
           <span class="score-pill" [style.background]="scoreColor(job.score)">{{ scorePct(job.score) }}</span>
           <span class="jc-title">{{ job.title }}</span>
+          <span class="edited-tag" *ngIf="job.edited" title="Manualy edited">Edited</span>
         </div>
         <div class="jc-meta-row">
           <span class="jc-company" *ngIf="job.company">{{ job.company }}</span>
@@ -30,6 +31,7 @@
     <div class="jc-right" (click)="$event.stopPropagation()">
       <span class="jr-date" *ngIf="job.postedAt">{{ job.postedAt | date: 'MMM d' }}</span>
       <div class="jr-actions">
+        <button class="act-btn" (click)="onEdit($event)" title="Edit">✎</button>
         <a class="act-btn" [href]="job.url" target="_blank" rel="noopener" title="Open">↗</a>
         <button class="act-btn" [class.on]="job.saved" (click)="onToggleSave($event)" title="Save">{{ job.saved ? '★' : '☆' }}</button>
         <button class="act-btn apply" *ngIf="!job.applied" (click)="onOpenApply($event)" title="Mark applied">✓</button>

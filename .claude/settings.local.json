@@ -14,7 +14,8 @@
       "Bash(npx electron-rebuild *)",
       "Bash(npm --prefix backend install)",
       "Bash(npx tsc *)",
-      "Bash(timeout 8 tsx src/index.ts)"
+      "Bash(timeout 8 tsx src/index.ts)",
+      "Bash(node -e \"require\\('sharp'\\)\")"
     ]
   }
 }

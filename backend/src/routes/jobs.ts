@@ -25,6 +25,7 @@ interface JobRow {
   applied_at: string | null;
   notes: string | null;
   fetched_at: string;
+  edited: number;
 }
 
 function rowToJob(r: JobRow) {
@@ -47,6 +48,7 @@ function rowToJob(r: JobRow) {
     appliedAt: r.applied_at,
     notes: r.notes,
     fetchedAt: r.fetched_at,
+    edited: !!r.edited,
   };
 }
 
@@ -87,14 +89,36 @@ jobsRouter.post('/refresh', async (_req, res) => {
   res.end();
 });
 
-jobsRouter.patch('/:id', (req, res) => {
+jobsRouter.patch('/:id', async (req, res) => {
   const { id } = req.params;
-  const { hidden, saved, applied, appliedAt, notes } = req.body as {
+  const {
+    hidden,
+    saved,
+    applied,
+    appliedAt,
+    notes,
+    title,
+    company,
+    location,
+    remote,
+    url,
+    description,
+    salary,
+    postedAt,
+  } = req.body as {
     hidden?: boolean;
     saved?: boolean;
     applied?: boolean;
     appliedAt?: string | null;
     notes?: string | null;
+    title?: string;
+    company?: string | null;
+    location?: string | null;
+    remote?: boolean;
+    url?: string;
+    description?: string | null;
+    salary?: string | null;
+    postedAt?: string | null;
   };
   const fields: string[] = [];
   const values: unknown[] = [];
@@ -118,12 +142,81 @@ jobsRouter.patch('/:id', (req, res) => {
     fields.push('notes = ?');
     values.push(notes ?? null);
   }
+  if (title !== undefined) {
+    fields.push('title = ?');
+    values.push(title);
+  }
+  if (company !== undefined) {
+    fields.push('company = ?');
+    values.push(company ?? null);
+  }
+  if (location !== undefined) {
+    fields.push('location = ?');
+    values.push(location ?? null);
+  }
+  if (remote !== undefined) {
+    fields.push('remote = ?');
+    values.push(remote ? 1 : 0);
+  }
+  if (url !== undefined) {
+    fields.push('url = ?');
+    values.push(url ?? '');
+  }
+  if (description !== undefined) {
+    fields.push('description = ?');
+    values.push(description ?? null);
+  }
+  if (salary !== undefined) {
+    fields.push('salary = ?');
+    values.push(salary ?? null);
+  }
+  if (postedAt !== undefined) {
+    fields.push('posted_at = ?');
+    values.push(postedAt ?? null);
+  }
+
+  // Mark as edited if any main fields are updated
+  if (
+    title !== undefined ||
+    company !== undefined ||
+    location !== undefined ||
+    remote !== undefined ||
+    url !== undefined ||
+    description !== undefined ||
+    salary !== undefined ||
+    postedAt !== undefined
+  ) {
+    fields.push('edited = ?');
+    values.push(1);
+  }
+
   if (!fields.length) {
     res.status(400).json({ error: 'no fields to update' });
     return;
   }
-  values.push(id);
-  db.prepare(`UPDATE jobs SET ${fields.join(', ')} WHERE id = ?`).run(...values);
+
+  // Re-score if title or description changed
+  if (title !== undefined || description !== undefined) {
+    const currentJob = db.prepare('SELECT title, description FROM jobs WHERE id = ?').get(id) as { title: string, description: string | null } | undefined;
+    if (currentJob) {
+      const resume = db.prepare('SELECT text FROM resume WHERE id = 1').get() as { text: string } | undefined;
+      if (resume?.text) {
+        const results = await scoreJobs(resume.text, [{
+          id,
+          title: title ?? currentJob.title,
+          description: description ?? currentJob.description ?? ''
+        }]);
+        const match = results.get(id);
+        if (match) {
+          fields.push('score = ?', 'matched_terms = ?');
+          values.push(match.score, JSON.stringify(match.matchedTerms));
+        }
+      }
+    }
+  }
+
+  const allValues = [...values, id];
+  db.prepare(`UPDATE jobs SET ${fields.join(', ')} WHERE id = ?`).run(...allValues);
   res.json({ ok: true });
 });
 
@@ -167,8 +260,8 @@ jobsRouter.post('/', async (req, res) => {
 
   try {
     db.prepare(`
-      INSERT INTO jobs (id, source, source_id, title, company, location, remote, url, description, posted_at, salary, score, matched_terms, fetched_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO jobs (id, source, source_id, title, company, location, remote, url, description, posted_at, salary, score, matched_terms, fetched_at, edited)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       source,
@@ -184,6 +277,7 @@ jobsRouter.post('/', async (req, res) => {
       score,
       JSON.stringify(matchedTerms),
       fetchedAt,
+      0,
     );
     res.json({ id, ok: true });
   } catch (err) {
