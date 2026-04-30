@@ -2,7 +2,10 @@
 
   <!-- ── Toolbar ───────────────────────────────────────────────────────── -->
   <header class="toolbar">
-    <span class="app-name">jobdash</span>
+    <div class="app-brand">
+      <img src="icon.svg" class="app-icon" alt="jobdash icon" />
+      <span class="app-name">jobdash</span>
+    </div>
     <div class="flex-1"></div>
     <button class="tb-btn accent" (click)="refresh()" [disabled]="refreshing()"
             title="Fetch jobs from external sources (Adzuna, The Muse, RemoteOK, Workable, Findwork). This can take a moment.">

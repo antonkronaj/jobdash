@@ -33,12 +33,24 @@
   -webkit-app-region: drag;
 }
 
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.app-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
 .app-name {
   font-weight: 800;
   font-size: 16px;
   color: var(--accent);
   letter-spacing: -0.5px;
-  -webkit-app-region: no-drag;
 }
 
 .tb-btn {
