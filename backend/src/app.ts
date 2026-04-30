@@ -1,12 +1,17 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
 import cron from 'node-cron';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 import { config } from './config.js';
 import './db.js';
 import { jobsRouter } from './routes/jobs.js';
 import { resumeRouter } from './routes/resume.js';
 import { settingsRouter } from './routes/settings.js';
 import { refreshJobs } from './services/refresh.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const iconSvgPath = resolve(__dirname, '../../resources/icon.svg');
 
 export function createApp(): Express {
   const app = express();
@@ -21,6 +26,10 @@ export function createApp(): Express {
 
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true });
+  });
+
+  app.get('/favicon', (_req, res) => {
+    res.sendFile(iconSvgPath, { headers: { 'Content-Type': 'image/svg+xml' } });
   });
 
   app.use('/api/jobs', jobsRouter);
