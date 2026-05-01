@@ -8,13 +8,14 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { StatusBarComponent } from './status-bar/status-bar.component';
 import { AddJobModalComponent } from './add-job-modal/add-job-modal.component';
 import { SettingsDrawerComponent } from './settings-drawer/settings-drawer.component';
+import { StopwordsModalComponent } from './stopwords-modal/stopwords-modal.component';
 
 import { JobCardComponent } from './job-card/job-card.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, MarkdownModule, SidebarComponent, StatusBarComponent, AddJobModalComponent, SettingsDrawerComponent, JobCardComponent],
+  imports: [CommonModule, FormsModule, MarkdownModule, SidebarComponent, StatusBarComponent, AddJobModalComponent, SettingsDrawerComponent, StopwordsModalComponent, JobCardComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -29,6 +30,9 @@ export class AppComponent implements OnInit {
   keys = signal<ApiKeysStatus>({ adzunaAppId: false, adzunaAppKey: false, adzunaCountry: 'us', findworkApiKey: false });
   termBoosts = signal<Record<string, number>>({});
   savingBoosts = signal(false);
+  stopwords = signal<string[]>([]);
+  savingStopwords = signal(false);
+  stopwordsOpen = signal(false);
   settingsOpen = signal(false);
   addOpen = signal(false);
   jobToEdit = signal<Job | null>(null);
@@ -98,6 +102,38 @@ export class AppComponent implements OnInit {
     this.api.getSources().subscribe((s) => this.sources.set(s));
     this.api.getKeys().subscribe((k) => this.keys.set(k));
     this.api.getTermBoosts().subscribe((r) => this.termBoosts.set(r.boosts));
+    this.api.getStopwords().subscribe((r) => this.stopwords.set(r.words));
+  }
+
+  openStopwordsModal(): void {
+    // Always re-fetch on open so the modal reflects what's in the db right now,
+    // independent of when (or whether) the initial load on app start succeeded.
+    this.api.getStopwords().subscribe({
+      next: (r) => {
+        this.stopwords.set(r.words);
+        this.stopwordsOpen.set(true);
+      },
+      error: (err) => {
+        this.message.set(`Failed to load stopwords: ${err.message ?? err}`);
+      },
+    });
+  }
+
+  onSaveStopwords(words: string[]): void {
+    this.savingStopwords.set(true);
+    this.api.saveStopwords(words).subscribe({
+      next: (r) => {
+        this.savingStopwords.set(false);
+        this.stopwords.set(words);
+        this.stopwordsOpen.set(false);
+        this.message.set(`Saved ${r.count} stopwords. Rescored ${r.rescored} jobs.`);
+        this.loadJobs();
+      },
+      error: (err) => {
+        this.savingStopwords.set(false);
+        this.message.set(`Failed to save stopwords: ${err.error?.error ?? err.message ?? err}`);
+      },
+    });
   }
 
   onSaveTermBoosts(boosts: Record<string, number>): void {

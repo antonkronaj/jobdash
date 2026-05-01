@@ -77,8 +77,17 @@
     (saveSettings)="onSaveSettings($event)"
     (uploadResume)="onFileSelected($event)"
     (saveKeys)="onSaveKeys($event)"
-    (saveTermBoosts)="onSaveTermBoosts($event)">
+    (saveTermBoosts)="onSaveTermBoosts($event)"
+    (openStopwords)="openStopwordsModal()">
   </app-settings-drawer>
+
+  <app-stopwords-modal
+    [isOpen]="stopwordsOpen()"
+    [words]="stopwords()"
+    [saving]="savingStopwords()"
+    (close)="stopwordsOpen.set(false)"
+    (save)="onSaveStopwords($event)">
+  </app-stopwords-modal>
 
   <app-add-job-modal
     [isOpen]="addOpen()"

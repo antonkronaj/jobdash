@@ -26,6 +26,7 @@ export class SettingsDrawerComponent {
   uploadResume = output<File>();
   saveKeys = output<ApiKeysUpdate>();
   saveTermBoosts = output<Record<string, number>>();
+  openStopwords = output<void>();
 
   keysDraft = signal<ApiKeysUpdate>({});
   boostRows = signal<BoostRow[]>([]);
@@ -38,7 +39,7 @@ export class SettingsDrawerComponent {
         .map(([term, weight]) => ({ term, weight }))
         .sort((a, b) => b.weight - a.weight);
       this.boostRows.set(rows);
-    });
+    }, { allowSignalWrites: true });
   }
 
   onClose() {

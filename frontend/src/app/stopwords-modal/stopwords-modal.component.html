@@ -1,0 +1,51 @@
+<div class="drawer-backdrop" *ngIf="isOpen()" (click)="onClose()"></div>
+<div class="modal-wrap" *ngIf="isOpen()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="dw-header">
+      <span class="dw-title">Stopwords</span>
+      <button class="dw-close" type="button" (click)="onClose()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="text-muted small">
+        Words to ignore when scoring jobs. These get filtered out of both the resume
+        and job descriptions before TF-IDF runs. Type and press <b>Enter</b> to add,
+        or paste a comma/space-separated list.
+      </p>
+
+      <div class="saving-banner" *ngIf="saving()">
+        <span class="spinner"></span>
+        Saving stopwords and rescoring all jobs…
+      </div>
+
+      <div class="pill-input" [class.disabled]="saving()" (click)="!saving() && focusInput.focus()">
+        <span class="pill" *ngFor="let word of draft()">
+          {{ word }}
+          <button type="button" class="pill-remove" (click)="removeWord(word)" [disabled]="saving()" title="Remove">✕</button>
+        </span>
+        <input
+          #focusInput
+          type="text"
+          class="pill-text-input"
+          placeholder="add a word…"
+          [ngModel]="inputValue()"
+          (ngModelChange)="inputValue.set($event)"
+          (keydown)="onInputKeydown($event)"
+          [disabled]="saving()" />
+      </div>
+
+      <div class="word-count text-muted small">
+        {{ draft().length }} {{ draft().length === 1 ? 'word' : 'words' }}
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="file-btn" type="button" (click)="onClose()" [disabled]="saving()">Cancel</button>
+      <button class="primary sm" type="button" (click)="onSave()" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : 'Save & rescore' }}
+      </button>
+    </div>
+
+  </div>
+</div>

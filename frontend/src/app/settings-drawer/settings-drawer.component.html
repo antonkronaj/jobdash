@@ -38,6 +38,15 @@
     </div>
 
     <div class="dw-section">
+      <div class="dw-section-title">Stopwords</div>
+      <p class="text-muted small">
+        Words that get filtered out before scoring (e.g. boilerplate like "responsibilities").
+        Add domain-specific noise terms to sharpen matches.
+      </p>
+      <button class="file-btn" type="button" (click)="openStopwords.emit()">Manage stopwords…</button>
+    </div>
+
+    <div class="dw-section">
       <div class="dw-section-title">Term boosts</div>
       <p class="text-muted small">
         Multiply the influence of specific terms in scoring. e.g. <b>java: 3</b> makes java

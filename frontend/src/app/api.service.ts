@@ -201,6 +201,17 @@ export class ApiService {
     return this.http.put<{ ok: boolean; rescored: number }>(`${API}/settings/term-boosts`, { boosts });
   }
 
+  getStopwords(): Observable<{ words: string[] }> {
+    return this.http.get<{ words: string[] }>(`${API}/settings/stopwords`);
+  }
+
+  saveStopwords(words: string[]): Observable<{ ok: boolean; rescored: number; count: number }> {
+    return this.http.put<{ ok: boolean; rescored: number; count: number }>(
+      `${API}/settings/stopwords`,
+      { words },
+    );
+  }
+
   getResume(): Observable<ResumeInfo> {
     return this.http.get<ResumeInfo>(`${API}/resume`);
   }

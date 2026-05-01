@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getSetting, setSetting } from '../db.js';
 import { config } from '../config.js';
 import { rescoreAll } from '../services/refresh.js';
+import { reloadUserStopwords } from '../services/resumeParser.js';
 
 export const settingsRouter = Router();
 
@@ -84,6 +85,45 @@ settingsRouter.put('/term-boosts', async (req, res) => {
   try {
     const rescored = await rescoreAll();
     res.json({ ok: true, rescored });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// User stopwords: extra words to ignore during tokenization (in addition to the
+// built-in lists). Saving triggers a rescore since it changes term extraction.
+settingsRouter.get('/stopwords', (_req, res) => {
+  const raw = getSetting('user_stopwords');
+  let words: string[] = [];
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) words = parsed.map((w) => String(w));
+    } catch { /* ignore malformed */ }
+  }
+  res.json({ words });
+});
+
+settingsRouter.put('/stopwords', async (req, res) => {
+  const { words } = req.body as { words?: string[] };
+  if (!Array.isArray(words)) {
+    res.status(400).json({ error: 'words must be an array' });
+    return;
+  }
+
+  // Normalize: lowercase, trim, dedupe, drop empties.
+  const clean = [...new Set(
+    words
+      .map((w) => String(w).trim().toLowerCase())
+      .filter((w) => w.length > 0),
+  )];
+
+  setSetting('user_stopwords', JSON.stringify(clean));
+  reloadUserStopwords();
+
+  try {
+    const rescored = await rescoreAll();
+    res.json({ ok: true, rescored, count: clean.length });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
