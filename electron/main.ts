@@ -2,7 +2,8 @@ import { app, BrowserWindow, dialog, shell } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { AddressInfo } from 'node:net';
-import { autoUpdater } from 'electron-updater';
+import pkg from 'electron-updater';
+const { autoUpdater } = pkg;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Dev mode opt-in via env var. Packaged apps always run in prod mode.
