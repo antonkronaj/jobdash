@@ -23,6 +23,17 @@ function currentParams(): FetchParams {
   };
 }
 
+export function getTermBoosts(): Record<string, number> {
+  const raw = getSetting('term_boosts');
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export async function refreshJobs(
   onSourceDone?: (result: SourceResult) => void,
 ): Promise<{ fetched: number; added: number }> {
@@ -67,7 +78,7 @@ export async function refreshJobs(
       title: j.title,
       description: j.description,
     }));
-    scores = await scoreJobs(resume.text, forScoring);
+    scores = await scoreJobs(resume.text, forScoring, getTermBoosts());
   }
 
   const insertStmt = db.prepare(`
@@ -137,7 +148,7 @@ export async function rescoreAll(): Promise<number> {
     .prepare("SELECT id, title, description FROM jobs WHERE edited = 0 AND id NOT LIKE 'manual:%'")
     .all() as Array<{ id: string; title: string; description: string | null }>;
 
-  const scores = await scoreJobs(resume.text, jobs);
+  const scores = await scoreJobs(resume.text, jobs, getTermBoosts());
   const stmt = db.prepare('UPDATE jobs SET score = ?, matched_terms = ? WHERE id = ?');
   const tx = db.transaction(() => {
     for (const j of jobs) {

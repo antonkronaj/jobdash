@@ -70,11 +70,14 @@
     [settings]="settings()"
     [resume]="resume()"
     [keys]="keys()"
+    [termBoosts]="termBoosts()"
     [uploading]="uploading()"
+    [savingBoosts]="savingBoosts()"
     (close)="settingsOpen.set(false)"
     (saveSettings)="onSaveSettings($event)"
     (uploadResume)="onFileSelected($event)"
-    (saveKeys)="onSaveKeys($event)">
+    (saveKeys)="onSaveKeys($event)"
+    (saveTermBoosts)="onSaveTermBoosts($event)">
   </app-settings-drawer>
 
   <app-add-job-modal

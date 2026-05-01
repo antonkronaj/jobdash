@@ -27,6 +27,8 @@ export class AppComponent implements OnInit {
   stats = signal<Stats | null>(null);
   sources = signal<{ source: string; count: number }[]>([]);
   keys = signal<ApiKeysStatus>({ adzunaAppId: false, adzunaAppKey: false, adzunaCountry: 'us', findworkApiKey: false });
+  termBoosts = signal<Record<string, number>>({});
+  savingBoosts = signal(false);
   settingsOpen = signal(false);
   addOpen = signal(false);
   jobToEdit = signal<Job | null>(null);
@@ -95,8 +97,24 @@ export class AppComponent implements OnInit {
     this.api.stats().subscribe((s) => this.stats.set(s));
     this.api.getSources().subscribe((s) => this.sources.set(s));
     this.api.getKeys().subscribe((k) => this.keys.set(k));
+    this.api.getTermBoosts().subscribe((r) => this.termBoosts.set(r.boosts));
   }
 
+  onSaveTermBoosts(boosts: Record<string, number>): void {
+    this.savingBoosts.set(true);
+    this.api.saveTermBoosts(boosts).subscribe({
+      next: (r) => {
+        this.savingBoosts.set(false);
+        this.termBoosts.set(boosts);
+        this.message.set(`Term boosts saved. Rescored ${r.rescored} jobs.`);
+        this.loadJobs();
+      },
+      error: (err) => {
+        this.savingBoosts.set(false);
+        this.message.set(`Failed to save boosts: ${err.error?.error ?? err.message ?? err}`);
+      },
+    });
+  }
 
   onSaveKeys(patch: ApiKeysUpdate): void {
     if (Object.keys(patch).length === 0) {

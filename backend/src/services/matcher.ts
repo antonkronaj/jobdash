@@ -24,6 +24,7 @@ function dotProduct(a: number[], b: number[]): number {
 export async function scoreJobs(
   resumeText: string,
   jobs: Array<{ id: string; title: string; description: string | null }>,
+  termBoosts: Record<string, number> = {},
 ): Promise<Map<string, MatchResult>> {
   const results = new Map<string, MatchResult>();
   if (jobs.length === 0) return results;
@@ -40,10 +41,28 @@ export async function scoreJobs(
     tfidf.addDocument(tokens);
   }
 
+  // Normalize boost keys to lowercase for case-insensitive matching against tokens.
+  const normalizedBoosts: Record<string, number> = {};
+  for (const [k, v] of Object.entries(termBoosts)) {
+    if (Number.isFinite(v) && v > 0) normalizedBoosts[k.toLowerCase()] = v;
+  }
+
   const resumeTermWeights = new Map<string, number>();
   tfidf.listTerms(0).forEach((t: { term: string; tfidf: number }) => {
-    resumeTermWeights.set(t.term, t.tfidf);
+    const boost = normalizedBoosts[t.term] ?? 1;
+    resumeTermWeights.set(t.term, t.tfidf * boost);
   });
+
+  // If a boosted term isn't already in the resume's TF-IDF list, inject it
+  // anyway so jobs mentioning it get credit. Use a baseline weight equal to
+  // the median of the existing resume weights, scaled by the boost.
+  const existingWeights = [...resumeTermWeights.values()].sort((a, b) => a - b);
+  const baseline = existingWeights[Math.floor(existingWeights.length / 2)] ?? 1;
+  for (const [term, boost] of Object.entries(normalizedBoosts)) {
+    if (!resumeTermWeights.has(term)) {
+      resumeTermWeights.set(term, baseline * boost);
+    }
+  }
 
   const topResumeTerms = [...resumeTermWeights.entries()]
     .sort((a, b) => b[1] - a[1])

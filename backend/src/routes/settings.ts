@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getSetting, setSetting } from '../db.js';
 import { config } from '../config.js';
+import { rescoreAll } from '../services/refresh.js';
 
 export const settingsRouter = Router();
 
@@ -48,4 +49,42 @@ settingsRouter.put('/keys', (req, res) => {
   if (adzunaCountry !== undefined) setSetting('adzuna_country', adzunaCountry.trim().toLowerCase());
   if (findworkApiKey !== undefined) setSetting('findwork_api_key', findworkApiKey.trim());
   res.json({ ok: true });
+});
+
+// Term boosts: a map of {term: weight} that multiplies each term's TF-IDF
+// weight at scoring time. Higher weight = more influence on the score.
+settingsRouter.get('/term-boosts', (_req, res) => {
+  const raw = getSetting('term_boosts');
+  let boosts: Record<string, number> = {};
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed === 'object' && parsed !== null) boosts = parsed;
+    } catch { /* ignore malformed */ }
+  }
+  res.json({ boosts });
+});
+
+settingsRouter.put('/term-boosts', async (req, res) => {
+  const { boosts } = req.body as { boosts?: Record<string, number> };
+  if (!boosts || typeof boosts !== 'object') {
+    res.status(400).json({ error: 'boosts must be an object' });
+    return;
+  }
+
+  // Sanitize: keys lowercased, values must be positive finite numbers.
+  const clean: Record<string, number> = {};
+  for (const [k, v] of Object.entries(boosts)) {
+    const term = String(k).trim().toLowerCase();
+    const weight = Number(v);
+    if (term && Number.isFinite(weight) && weight > 0) clean[term] = weight;
+  }
+
+  setSetting('term_boosts', JSON.stringify(clean));
+  try {
+    const rescored = await rescoreAll();
+    res.json({ ok: true, rescored });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });

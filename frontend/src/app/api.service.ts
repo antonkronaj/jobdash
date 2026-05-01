@@ -193,6 +193,14 @@ export class ApiService {
     return this.http.put<{ ok: boolean }>(`${API}/settings/keys`, patch);
   }
 
+  getTermBoosts(): Observable<{ boosts: Record<string, number> }> {
+    return this.http.get<{ boosts: Record<string, number> }>(`${API}/settings/term-boosts`);
+  }
+
+  saveTermBoosts(boosts: Record<string, number>): Observable<{ ok: boolean; rescored: number }> {
+    return this.http.put<{ ok: boolean; rescored: number }>(`${API}/settings/term-boosts`, { boosts });
+  }
+
   getResume(): Observable<ResumeInfo> {
     return this.http.get<ResumeInfo>(`${API}/resume`);
   }

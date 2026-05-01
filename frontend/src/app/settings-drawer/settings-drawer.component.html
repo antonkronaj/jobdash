@@ -38,6 +38,40 @@
     </div>
 
     <div class="dw-section">
+      <div class="dw-section-title">Term boosts</div>
+      <p class="text-muted small">
+        Multiply the influence of specific terms in scoring. e.g. <b>java: 3</b> makes java
+        matches count 3× a normal term. Affects the TF-IDF half of the score.
+      </p>
+      <div class="boost-rows">
+        <div class="boost-row" *ngFor="let row of boostRows(); let i = index; trackBy: trackByIndex">
+          <input
+            class="boost-term"
+            type="text"
+            placeholder="term (e.g. java)"
+            [ngModel]="row.term"
+            (ngModelChange)="updateBoostTerm(i, $event)" />
+          <input
+            class="boost-weight"
+            type="number"
+            min="0.1"
+            step="0.1"
+            placeholder="2"
+            [ngModel]="row.weight"
+            (ngModelChange)="updateBoostWeight(i, $event)" />
+          <button class="boost-remove" type="button" (click)="removeBoostRow(i)" title="Remove">✕</button>
+        </div>
+        <div class="text-muted small" *ngIf="boostRows().length === 0">No boosts yet.</div>
+      </div>
+      <div class="boost-actions">
+        <button class="file-btn" type="button" (click)="addBoostRow()">+ Add</button>
+        <button class="primary sm" type="button" (click)="onSaveBoosts()" [disabled]="savingBoosts()">
+          {{ savingBoosts() ? 'Saving…' : 'Save & rescore' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="dw-section">
       <div class="dw-section-title">
         API keys
         <span class="key-status-inline">
