@@ -7,7 +7,12 @@ import { workable } from './fetchers/workable.js';
 import { findwork } from './fetchers/findwork.js';
 import type { FetchedJob, FetchParams } from './fetchers/types.js';
 import { scoreJobs } from './matcher.js';
-import { randomUUID } from 'node:crypto';
+
+export interface SourceResult {
+  source: string;
+  count: number;
+  error?: string;
+}
 
 function currentParams(): FetchParams {
   return {
@@ -18,28 +23,38 @@ function currentParams(): FetchParams {
   };
 }
 
-export async function refreshJobs(): Promise<{ fetched: number; added: number }> {
+export async function refreshJobs(
+  onSourceDone?: (result: SourceResult) => void,
+): Promise<{ fetched: number; added: number }> {
   const params = currentParams();
   const ranAt = new Date().toISOString();
 
-  let fetched: FetchedJob[] = [];
-  let errorMsg: string | null = null;
+  // Run all fetchers concurrently; report each one as it settles
+  const fetchers: Array<{ source: string; fn: () => Promise<FetchedJob[]> }> = [
+    { source: 'adzuna',   fn: () => adzuna(params)   },
+    { source: 'themuse',  fn: () => themuse(params)   },
+    { source: 'remoteok', fn: () => remoteok(params)  },
+    { source: 'workable', fn: () => workable(params)  },
+    { source: 'findwork', fn: () => findwork(params)  },
+  ];
 
-  try {
-    const results = await Promise.allSettled([
-      adzuna(params),
-      themuse(params),
-      remoteok(params),
-      workable(params),
-      findwork(params),
-    ]);
-    for (const r of results) {
-      if (r.status === 'fulfilled') fetched = fetched.concat(r.value);
-      else console.error('[refresh] fetcher failed:', r.reason);
-    }
-  } catch (err) {
-    errorMsg = err instanceof Error ? err.message : String(err);
-  }
+  const buckets: FetchedJob[][] = await Promise.all(
+    fetchers.map(({ source, fn }) =>
+      fn()
+        .then((jobs) => {
+          onSourceDone?.({ source, count: jobs.length });
+          return jobs;
+        })
+        .catch((err) => {
+          const error = err instanceof Error ? err.message : String(err);
+          console.error(`[refresh] ${source} failed:`, error);
+          onSourceDone?.({ source, count: 0, error });
+          return [] as FetchedJob[];
+        }),
+    ),
+  );
+
+  const fetched = buckets.flat().filter((j) => j.title);
 
   const resume = db.prepare('SELECT text FROM resume WHERE id = 1').get() as
     | { text: string }
@@ -52,23 +67,23 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
       title: j.title,
       description: j.description,
     }));
-    scores = scoreJobs(resume.text, forScoring);
+    scores = await scoreJobs(resume.text, forScoring);
   }
 
   const insertStmt = db.prepare(`
     INSERT INTO jobs (id, source, source_id, title, company, location, remote, url, description, posted_at, salary, score, matched_terms, fetched_at)
     VALUES (@id, @source, @source_id, @title, @company, @location, @remote, @url, @description, @posted_at, @salary, @score, @matched_terms, @fetched_at)
     ON CONFLICT(source, source_id) DO UPDATE SET
-      title = excluded.title,
-      company = excluded.company,
-      location = excluded.location,
-      remote = excluded.remote,
-      url = excluded.url,
-      description = excluded.description,
-      posted_at = excluded.posted_at,
-      salary = excluded.salary,
-      score = excluded.score,
-      matched_terms = excluded.matched_terms,
+      title = CASE WHEN jobs.edited = 0 THEN excluded.title ELSE jobs.title END,
+      company = CASE WHEN jobs.edited = 0 THEN excluded.company ELSE jobs.company END,
+      location = CASE WHEN jobs.edited = 0 THEN excluded.location ELSE jobs.location END,
+      remote = CASE WHEN jobs.edited = 0 THEN excluded.remote ELSE jobs.remote END,
+      url = CASE WHEN jobs.edited = 0 THEN excluded.url ELSE jobs.url END,
+      description = CASE WHEN jobs.edited = 0 THEN excluded.description ELSE jobs.description END,
+      posted_at = CASE WHEN jobs.edited = 0 THEN excluded.posted_at ELSE jobs.posted_at END,
+      salary = CASE WHEN jobs.edited = 0 THEN excluded.salary ELSE jobs.salary END,
+      score = CASE WHEN jobs.edited = 0 THEN excluded.score ELSE jobs.score END,
+      matched_terms = CASE WHEN jobs.edited = 0 THEN excluded.matched_terms ELSE jobs.matched_terms END,
       fetched_at = excluded.fetched_at
   `);
 
@@ -97,14 +112,14 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
     }
   });
 
-  insertMany(fetched.filter((j) => j.title));
+  insertMany(fetched);
 
   const countAfter = (db.prepare('SELECT COUNT(*) as c FROM jobs').get() as { c: number }).c;
   const added = countAfter - countBefore;
 
   db.prepare(
     'INSERT INTO refresh_log (ran_at, fetched_count, new_count, error) VALUES (?, ?, ?, ?)',
-  ).run(ranAt, fetched.length, added, errorMsg);
+  ).run(ranAt, fetched.length, added, null);
 
   return { fetched: fetched.length, added };
 }
@@ -112,17 +127,17 @@ export async function refreshJobs(): Promise<{ fetched: number; added: number }>
 /**
  * Rescore all existing jobs against the current resume (no re-fetch).
  */
-export function rescoreAll(): number {
+export async function rescoreAll(): Promise<number> {
   const resume = db.prepare('SELECT text FROM resume WHERE id = 1').get() as
     | { text: string }
     | undefined;
   if (!resume?.text) return 0;
 
   const jobs = db
-    .prepare('SELECT id, title, description FROM jobs')
-    .all() as Array<{ id: string; title: string; description: string }>;
+    .prepare('SELECT id, title, description FROM jobs WHERE edited = 0 AND id NOT LIKE "manual:%"')
+    .all() as Array<{ id: string; title: string; description: string | null }>;
 
-  const scores = scoreJobs(resume.text, jobs);
+  const scores = await scoreJobs(resume.text, jobs);
   const stmt = db.prepare('UPDATE jobs SET score = ?, matched_terms = ? WHERE id = ?');
   const tx = db.transaction(() => {
     for (const j of jobs) {

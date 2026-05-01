@@ -1,0 +1,85 @@
+<div class="job-card"
+     [class.is-expanded]="expanded"
+     [class.is-applied]="job.applied"
+     [class.is-hidden]="job.hidden">
+
+  <div class="jc-main" (click)="onToggleExpand()">
+    <div class="jc-details">
+      <div class="jc-header">
+        <div class="jc-title-row">
+          <span class="score-pill" [style.background]="scoreColor(job.score)">{{ scorePct(job.score) }}</span>
+          <span class="jc-title">{{ job.title }}</span>
+          <span class="edited-tag" *ngIf="job.edited" title="Manualy edited">Edited</span>
+        </div>
+        <div class="jc-meta-row">
+          <span class="jc-company" *ngIf="job.company">{{ job.company }}</span>
+          <span *ngIf="job.company && job.location" class="meta-dot">·</span>
+          <span class="jc-location" *ngIf="job.location">{{ job.location }}</span>
+          <span *ngIf="(job.company || job.location) && job.salary" class="meta-dot">·</span>
+          <span class="jc-salary" *ngIf="job.salary">{{ job.salary }}</span>
+        </div>
+      </div>
+
+      <div class="jc-footer">
+        <div class="jr-tags">
+          <span class="src-tag" [attr.data-source]="job.source">{{ job.source }}</span>
+          <span class="remote-tag" *ngIf="job.remote">remote</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="jc-right" (click)="$event.stopPropagation()">
+      <span class="jr-date" *ngIf="job.postedAt">{{ job.postedAt | date: 'MMM d' }}</span>
+      <div class="jr-actions">
+        <button class="act-btn" (click)="onEdit($event)" title="Edit">✎</button>
+        <a class="act-btn" [href]="job.url" target="_blank" rel="noopener" title="Open">↗</a>
+        <button class="act-btn" [class.on]="job.saved" (click)="onToggleSave($event)" title="Save">{{ job.saved ? '★' : '☆' }}</button>
+        <button class="act-btn apply" *ngIf="!job.applied" (click)="onOpenApply($event)" title="Mark applied">✓</button>
+        <button class="act-btn apply on" *ngIf="job.applied" (click)="onUnapply($event)" title="Remove applied">✓</button>
+        <button class="act-btn" *ngIf="!job.hidden" (click)="onHide($event)" title="Hide">✕</button>
+        <button class="act-btn" *ngIf="job.hidden" (click)="onUnhide($event)" title="Unhide">↺</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matched terms (expanded only) -->
+  <div class="jr-terms" *ngIf="expanded && job.matchedTerms.length">
+    <span class="jr-terms-label">Matched terms</span>
+    <span class="term-chip" *ngFor="let t of job.matchedTerms">{{ t }}</span>
+  </div>
+  <div class="jr-terms jr-terms-empty"
+       *ngIf="expanded && !job.matchedTerms.length">
+    <span class="jr-terms-label">Matched terms</span>
+    <span class="text-muted small">No resume term overlap</span>
+  </div>
+
+  <!-- Applied summary bar -->
+  <div class="applied-bar" *ngIf="job.applied && !applying" (click)="$event.stopPropagation()">
+    <span class="applied-date">✓ Applied {{ job.appliedAt ? (job.appliedAt | date: 'mediumDate') : '' }}</span>
+    <span class="applied-notes" *ngIf="job.notes">{{ job.notes }}</span>
+    <button class="link-btn" (click)="onOpenApply($event)">Edit</button>
+  </div>
+
+  <!-- Apply panel -->
+  <div class="apply-panel" *ngIf="applying" (click)="$event.stopPropagation()">
+    <div class="apply-fields">
+      <label>Date applied
+        <input type="date" [ngModel]="applyDraft.appliedAt" (ngModelChange)="onSetApplyDate($event)" />
+      </label>
+      <label class="notes-label">Notes
+        <textarea rows="2" placeholder="Recruiter, salary, follow-up…"
+          [ngModel]="applyDraft.notes" (ngModelChange)="onSetApplyNotes($event)"></textarea>
+      </label>
+    </div>
+    <div class="apply-actions">
+      <button (click)="onCancelApply($event)">Cancel</button>
+      <button class="primary" (click)="onSaveApply($event)">Save</button>
+    </div>
+  </div>
+
+  <!-- Description (expanded only) -->
+  <div class="jr-desc" *ngIf="expanded && job.description">
+    <markdown [data]="job.description"></markdown>
+  </div>
+
+</div>

@@ -1,0 +1,69 @@
+<aside class="sidebar">
+  <div class="sb-group">
+    <div class="sb-search-wrap">
+      <span class="sb-search-icon">⌕</span>
+      <input
+        type="search"
+        class="sb-search"
+        placeholder="Search jobs…"
+        [ngModel]="searchText()"
+        (ngModelChange)="searchText.set($event)" />
+      <button class="sb-search-clear" *ngIf="searchText()" (click)="searchText.set('')" title="Clear">✕</button>
+    </div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-heading">Filters</div>
+    <div class="sb-source" [class.active]="savedOnly()" [class.dim]="refreshing()" (click)="!refreshing() && savedOnly.set(!savedOnly()); onFilterClick()">
+      <span class="src-dot" [class.active]="savedOnly()"></span>
+      <span class="src-name">Saved only</span>
+      <span class="src-count">{{ stats()?.saved || 0 }}</span>
+    </div>
+    <div class="sb-source" [class.active]="appliedOnly()" [class.dim]="refreshing()" (click)="!refreshing() && appliedOnly.set(!appliedOnly()); onFilterClick()">
+      <span class="src-dot" [class.active]="appliedOnly()"></span>
+      <span class="src-name">Applied only</span>
+      <span class="src-count">{{ stats()?.applied || 0 }}</span>
+    </div>
+    <div class="sb-source" [class.active]="showHidden()" [class.dim]="refreshing()" (click)="!refreshing() && showHidden.set(!showHidden()); onFilterClick()">
+      <span class="src-dot" [class.active]="showHidden()"></span>
+      <span class="src-name">Show hidden</span>
+      <span class="src-count">{{ stats()?.hidden || 0 }}</span>
+    </div>
+    <div class="sb-source" [class.active]="usOnly()" [class.dim]="refreshing()" (click)="!refreshing() && usOnly.set(!usOnly())">
+      <span class="src-dot" [class.active]="usOnly()"></span>
+      <span class="src-name">US only</span>
+    </div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-heading">Posted within</div>
+    <select class="sb-select" [ngModel]="postedWithin()" (ngModelChange)="postedWithin.set($event ? +$event : null)" [disabled]="refreshing()">
+      <option [ngValue]="null">Any time</option>
+      <option value="1">24 hours</option>
+      <option value="7">7 days</option>
+      <option value="30">30 days</option>
+    </select>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-heading">
+      Min score
+      <span class="sb-value">{{ scorePct(minScore()) }}%</span>
+    </div>
+    <input type="range" class="sb-range" min="0" max="1" step="0.05"
+           [ngModel]="minScore()" (ngModelChange)="minScore.set($event); onFilterClick()"
+           [disabled]="refreshing()" />
+  </div>
+
+  <div class="sb-group" *ngIf="sources().length">
+    <div class="sb-heading">Sources</div>
+    <div class="sb-source" *ngFor="let s of sources()"
+         [class.active]="selectedSource() === s.source"
+         [class.dim]="refreshing()"
+         (click)="!refreshing() && selectedSource.set(selectedSource() === s.source ? null : s.source)">
+      <span class="src-dot" [attr.data-source]="s.source" [class.active]="selectedSource() === s.source"></span>
+      <span class="src-name">{{ s.source }}</span>
+      <span class="src-count">{{ s.count }}</span>
+    </div>
+  </div>
+</aside>

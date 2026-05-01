@@ -42,7 +42,7 @@ resumeRouter.post('/', upload.single('resume'), async (req, res) => {
          uploaded_at = excluded.uploaded_at`,
     ).run(req.file.originalname, text, JSON.stringify(terms), uploadedAt);
 
-    const rescored = rescoreAll();
+    const rescored = await rescoreAll();
     res.json({ ok: true, chars: text.length, termCount: terms.length, rescored });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });

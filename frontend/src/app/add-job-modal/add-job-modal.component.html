@@ -1,0 +1,61 @@
+<div class="drawer-backdrop" *ngIf="isOpen()" (click)="onClose()"></div>
+<div class="modal-wrap" *ngIf="isOpen()">
+  <aside class="modal">
+    <div class="dw-header">
+      <span class="dw-title">{{ jobToEdit() ? 'Edit Job' : 'Add Job Manually' }}</span>
+      <button class="dw-close" (click)="onClose()">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="dw-section">
+        <div class="metadata-grid">
+          <label class="dw-field">
+            Title *
+            <input type="text" [ngModel]="draft().title" (ngModelChange)="updateDraft({title: $event})" placeholder="Software Engineer" />
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <label class="dw-field">
+              Company
+              <input type="text" [ngModel]="draft().company" (ngModelChange)="updateDraft({company: $event})" placeholder="Acme Inc." />
+            </label>
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;">
+              <label class="dw-field">
+                Location
+                <input type="text" [ngModel]="draft().location" (ngModelChange)="updateDraft({location: $event})" placeholder="Remote / New York" />
+              </label>
+              <label class="dw-check" style="padding-bottom: 8px;">
+                <input type="checkbox" [ngModel]="draft().remote" (ngModelChange)="updateDraft({remote: $event})" />
+                Remote
+              </label>
+            </div>
+          </div>
+          <label class="dw-field">
+            URL
+            <input type="text" [ngModel]="draft().url" (ngModelChange)="updateDraft({url: $event})" placeholder="https://..." />
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end;">
+            <label class="dw-field">
+              Salary
+              <input type="text" [ngModel]="draft().salary" (ngModelChange)="updateDraft({salary: $event})" placeholder="$120k - $150k" />
+            </label>
+            <label class="dw-field">
+              Date Posted
+              <input type="date" [ngModel]="draft().postedAt" (ngModelChange)="updateDraft({postedAt: $event})" />
+            </label>
+          </div>
+        </div>
+
+        <div class="description-section">
+          <label class="dw-field">
+            Description
+            <textarea [ngModel]="draft().description" (ngModelChange)="updateDraft({description: $event})" placeholder="Paste job description here for matching..."></textarea>
+          </label>
+        </div>
+
+        <div class="dw-actions" style="justify-content: flex-end; margin-top: 12px;">
+          <button (click)="onClose()">Cancel</button>
+          <button class="primary" (click)="onSave()">{{ jobToEdit() ? 'Save Changes' : 'Add Job' }}</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
