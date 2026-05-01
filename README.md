@@ -2,7 +2,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Personal job-recommendation desktop app. Pulls Software Engineer postings from five sources (Adzuna, The Muse, RemoteOK, Findwork, Workable), parses your resume PDF, and ranks jobs by TF-IDF cosine similarity against the resume — no paid AI key required.
+Personal job-recommendation desktop app. Pulls Software Engineer postings from five sources (Adzuna, The Muse, RemoteOK, Findwork, Workable), parses your resume PDF, and ranks jobs by hybrid semantic + keyword similarity — no paid AI key required.
+
+Features:
+- **Local Scoring**: Uses a small (~25 MB) ONNX model running locally to score jobs. No data leaves your machine for matching.
+- **Manual Entries**: Add and track jobs you found elsewhere (LinkedIn, etc.).
+- **Application Tracking**: Mark jobs as applied, add personal notes, and keep track of your job search progress.
+- **Term Boosting**: Boost specific keywords (like "Rust" or "Security") to influence matching scores.
+- **Privacy First**: All data (resume, jobs, settings) stays in a local SQLite database.
 
 You can visit https://publicapis.io/category/jobs to see what job APIS that are available.
 ## Stack
@@ -111,9 +118,10 @@ Two ways to provide keys, in order of precedence:
 3. Upload your resume PDF (top panel).
 4. Click **Refresh now** — fetches from all five sources and scores every job against your resume.
 5. Scores are 0–100%. Sort is by score DESC. Use the min-score slider to filter noise.
-6. Filters: source chips (click to toggle), US-only, Posted within 24h / 7d / 30d, Saved-only, Show hidden.
-7. Click a job to expand the description. Save (★) or hide (✕) jobs. Hidden jobs are excluded unless "Show hidden" is toggled.
+6. Filters: source chips (click to toggle), US-only, Posted within 24h / 7d / 30d, Saved-only, Show hidden, Applied-only.
+7. Click a job to expand the description. Save (★), hide (✕), or mark as applied (check icon). Edit job details or add personal notes.
 8. While the app is open, the cron triggers a refresh at 6am local. (Closed apps don't fetch — there's no background daemon.)
+9. **Manual Add**: Click the "+" button to manually add jobs you found elsewhere to keep all your applications in one place.
 
 ## How matching works
 
@@ -131,7 +139,8 @@ Hybrid scoring blends two signals: **70% semantic embedding similarity + 30% TF-
 
 - `GET /api/jobs?showHidden=&savedOnly=&minScore=`
 - `POST /api/jobs/refresh`
-- `PATCH /api/jobs/:id` body `{ hidden?, saved? }`
+- `PATCH /api/jobs/:id` body `{ hidden?, saved?, applied?, notes?, title?, company?, ... }`
+- `POST /api/jobs/manual` body `{ title, company, ... }`
 - `GET /api/jobs/stats`
 - `GET /api/jobs/sources`
 - `GET /api/resume` · `POST /api/resume` (multipart `resume`, PDF)
