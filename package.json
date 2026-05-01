@@ -1,6 +1,6 @@
 {
   "name": "jobdash",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "Personal job-recommendation desktop app",
   "main": "electron/dist/main.js",
