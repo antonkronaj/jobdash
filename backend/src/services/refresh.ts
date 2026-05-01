@@ -134,7 +134,7 @@ export async function rescoreAll(): Promise<number> {
   if (!resume?.text) return 0;
 
   const jobs = db
-    .prepare('SELECT id, title, description FROM jobs WHERE edited = 0 AND id NOT LIKE "manual:%"')
+    .prepare("SELECT id, title, description FROM jobs WHERE edited = 0 AND id NOT LIKE 'manual:%'")
     .all() as Array<{ id: string; title: string; description: string | null }>;
 
   const scores = await scoreJobs(resume.text, jobs);
